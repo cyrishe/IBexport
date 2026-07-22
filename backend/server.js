@@ -14,7 +14,7 @@ const SALT_ROUNDS = 10;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 migrate();
-
+const path = require('path');
 // ====================== CACHE ======================
 var resultCache = {};
 var CACHE_TTL = 55 * 60 * 1000;
@@ -275,7 +275,13 @@ app.get('/api/debt/hot-news', async (req, res) => {
 app.get('/api/ai/status', (req, res) => {
   ok(res, { configured: ai.isConfigured(), model: process.env.DEEPSEEK_MODEL || 'deepseek-chat', apiKeySet: !!process.env.DEEPSEEK_API_KEY });
 });
+// ====================== FRONTEND STATIC ======================
+app.use(express.static(path.join(__dirname, '..')));
 
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return fail(res, '接口不存在', 404);
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
 // ====================== STARTUP ======================
 app.listen(PORT, () => {
   console.log('═══════════════════════════════════════════');
