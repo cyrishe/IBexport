@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI投行专家</title>
+<style>/* ==================== Reset & Base ==================== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  background:#0a1628;color:#e8e8e8;min-height:100vh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale
+}
+input,button,textarea{font-family:inherit;font-size:inherit;outline:none;border:none;background:none;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(212,168,83,0.3);border-radius:2px}
+
+/* ==================== Loading Screen ==================== */
+#loading-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0a1628 0%,#1a2d4a 50%,#0d1f3c 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:none
+}
+#loading-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
+.loader-logo{text-align:center;margin-bottom:40px}
+.loader-icon{font-size:48px;color:#d4a853;margin-bottom:12px;animation:pulse 1.5s ease-in-out infinite}
+.loader-title{font-size:28px;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:6px}
+.loader-sub{font-size:13px;color:rgba(212,168,83,0.6);letter-spacing:4px}
+.loader-bar{width:200px;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.loader-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#d4a853,#f0d080);border-radius:2px;animation:loaderFill 2s ease forwards}
+@keyframes loaderFill{0%{width:0%}100%{width:100%}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.05)}}
+
+/* ==================== Toast ==================== */
+#toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);
+  z-index:9998;padding:10px 24px;border-radius:8px;
+  background:rgba(10,22,40,0.95);color:#e8e8e8;font-size:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);backdrop-filter:blur(10px);
+  border:1px solid rgba(212,168,83,0.2);
+  opacity:0;visibility:hidden;transition:all 0.3s ease;white-space:nowrap
+}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:rgba(76,175,80,0.4)}
+#toast.error{border-color:rgba(244,67,54,0.4)}
+#toast.warning{border-color:rgba(255,152,0,0.4)}
+
+/* ==================== Page System ==================== */
+.page{display:none}
+.page.active-page{display:block}
+#page-login{display:none}
+#page-login.active-page{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+
+/* ==================== Login ==================== */
+.login-container{width:100%;max-width:400px;padding:40px 28px}
+.login-brand{text-align:center;margin-bottom:36px}
+.login-icon{font-size:56px;color:#d4a853;margin-bottom:12px}
+.login-brand h1{font-size:28px;font-weight:700;color:#fff;letter-spacing:2px;margin-bottom:4px}
+.login-brand p{font-size:13px;color:rgba(212,168,83,0.6);letter-spacing:3px}
+.login-tabs{display:flex;margin-bottom:28px;border-radius:8px;overflow:hidden;border:1px solid rgba(212,168,83,0.2)}
+.login-tab{flex:1;padding:12px;text-align:center;font-size:15px;color:rgba(255,255,255,0.5);transition:all 0.3s;background:transparent}
+.login-tab.active{background:rgba(212,168,83,0.15);color:#d4a853;font-weight:600}
+.login-form{display:none;flex-direction:column;gap:16px}
+.login-form.active{display:flex}
+.input-group{display:flex;align-items:center;background:rgba(255,255,255,0.06);border-radius:8px;padding:0 16px;border:1px solid rgba(255,255,255,0.08);transition:border-color 0.3s;height:50px}
+.input-group:focus-within{border-color:#d4a853}
+.input-icon{font-size:16px;margin-right:12px;opacity:0.6}
+.input-group input{flex:1;height:100%;font-size:15px;color:#fff;background:transparent}
+.input-group input::placeholder{color:rgba(255,255,255,0.3)}
+.input-group-code{position:relative}
+.btn-code{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(212,168,83,0.15);color:#d4a853;padding:6px 12px;border-radius:4px;font-size:12px;white-space:nowrap;transition:all 0.3s}
+.btn-code:hover{background:rgba(212,168,83,0.25)}
+.btn-code:disabled{opacity:0.4;cursor:not-allowed}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;transition:all 0.3s;letter-spacing:1px}
+.btn-primary{background:linear-gradient(135deg,#d4a853,#b8860b);color:#0a1628}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(212,168,83,0.3)}
+.btn-primary:active{transform:translateY(0)}
+.btn-full{width:100%}
+.login-hint{text-align:center;font-size:12px;color:rgba(255,255,255,0.3);margin-top:4px}
+
+/* ==================== App Shell ==================== */
+#app-shell{display:none;min-height:100vh;padding-bottom:70px}
+#app-shell.active{display:block}
+
+/* ==================== Header ==================== */
+#app-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 12px;background:rgba(10,22,40,0.95);backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(212,168,83,0.1)
+}
+.header-left{display:flex;align-items:baseline;gap:6px}
+.header-greeting{font-size:14px;color:rgba(255,255,255,0.5)}
+.header-name{font-size:18px;font-weight:600;color:#fff}
+.header-right{display:flex;align-items:center;gap:10px}
+.membership-badge{
+  padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;
+  background:linear-gradient(135deg,rgba(212,168,83,0.2),rgba(184,134,11,0.3));
+  color:#d4a853;border:1px solid rgba(212,168,83,0.3)
+}
+.header-btn{font-size:20px;color:rgba(255,255,255,0.5);padding:4px;transition:color 0.3s}
+.header-btn:hover{color:#d4a853}
+
+/* ==================== Section Header (Debt/Equity pages) ==================== */
+.section-header{
+  display:flex;align-items:center;gap:12px;padding:12px 20px;
+  background:rgba(10,22,40,0.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(212,168,83,0.1)
+}
+.back-btn{font-size:20px;color:rgba(255,255,255,0.6);padding:4px 8px;transition:color 0.3s}
+.back-btn:hover{color:#d4a853}
+.section-header h2{font-size:18px;font-weight:600;color:#fff}
+
+/* ==================== Home Page ==================== */
+.app-page{padding:0 16px 20px}
+
+/* Membership Card */
+.membership-card{
+  position:relative;margin:16px 0;padding:24px;border-radius:16px;
+  background:linear-gradient(135deg,#1a2d4a 0%,#0d1f3c 100%);
+  border:1px solid rgba(212,168,83,0.2);overflow:hidden
+}
+.member-bg-pattern{
+  position:absolute;inset:0;opacity:0.05;
+  background:radial-gradient(circle at 20% 50%,#d4a853 0%,transparent 50%),
+             radial-gradient(circle at 80% 20%,#d4a853 0%,transparent 50%);
+  pointer-events:none
+}
+.member-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;position:relative}
+.member-level-label{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.member-level{display:flex;align-items:center;gap:8px}
+.level-icon{color:#d4a853;font-size:18px}
+.member-level span:last-child{font-size:20px;font-weight:700;color:#fff}
+.btn-checkin{
+  padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;
+  background:linear-gradient(135deg,#d4a853,#b8860b);color:#0a1628;
+  transition:all 0.3s;display:flex;align-items:center;gap:4px
+}
+.btn-checkin:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(212,168,83,0.3)}
+.btn-checkin:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-checkin.done{background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid rgba(76,175,80,0.3)}
+.member-progress{position:relative;margin-bottom:14px}
+.member-progress-info{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px}
+.member-progress-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.member-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#d4a853,#f0d080);transition:width 0.6s ease}
+.member-tiers{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:11px;position:relative}
+.tier{color:rgba(255,255,255,0.3);padding:2px 6px;border-radius:4px;transition:all 0.3s}
+.tier.active{color:#d4a853;background:rgba(212,168,83,0.1);font-weight:600}
+.tier-arrow{color:rgba(255,255,255,0.15);font-size:10px}
+
+/* ==================== Quick Actions ==================== */
+.quick-actions{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.qa-btn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:14px 6px;border-radius:12px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);transition:all 0.3s
+}
+.qa-btn:hover{background:rgba(212,168,83,0.08);border-color:rgba(212,168,83,0.15);transform:translateY(-1px)}
+.qa-icon{font-size:22px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.qa-debt{background:rgba(212,168,83,0.12);color:#d4a853}
+.qa-equity{background:rgba(76,175,80,0.12);color:#4caf50}
+.qa-checkin{background:rgba(33,150,243,0.12);color:#2196f3}
+.qa-sub{background:rgba(156,39,176,0.12);color:#9c27b0}
+.qa-write{background:rgba(156,39,176,0.12);color:#9c27b0}
+.qa-label{font-size:12px;color:rgba(255,255,255,0.7)}
+
+/* ==================== Section Cards ==================== */
+.section-cards{display:flex;flex-direction:column;gap:14px}
+.section-card{
+  position:relative;border-radius:16px;overflow:hidden;cursor:pointer;
+  transition:all 0.3s;min-height:140px
+}
+.section-card:hover{transform:translateY(-2px)}
+.section-card-debt{background:linear-gradient(135deg,#1a2d4a,#152238)}
+.section-card-equity{background:linear-gradient(135deg,#1a3a2a,#152238)}
+.section-card-bg{position:absolute;inset:0;opacity:0.08}
+.section-card-debt .section-card-bg{
+  background:radial-gradient(circle at 100% 100%,#d4a853 0%,transparent 50%)
+}
+.section-card-write{background:linear-gradient(135deg,#2a1a3a,#152238)}
+.section-card-write .section-card-bg{background:radial-gradient(circle at 100% 100%,#9c27b0 0%,transparent 50%)}
+.section-card-write .section-card-icon{color:#9c27b0}
+.section-card-equity .section-card-bg{
+  background:radial-gradient(circle at 100% 100%,#4caf50 0%,transparent 50%)
+}
+.section-card-content{position:relative;padding:24px;z-index:1}
+.section-card-icon{font-size:32px;margin-bottom:10px}
+.section-card-debt .section-card-icon{color:#d4a853}
+.section-card-equity .section-card-icon{color:#4caf50}
+.section-card-content h3{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px}
+.section-card-content p{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:14px}
+.section-card-features{display:flex;flex-wrap:wrap;gap:6px}
+.section-card-features span{
+  padding:4px 10px;border-radius:4px;font-size:11px;
+  background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6)
+}
+
+/* ==================== News Ticker ==================== */
+.news-ticker-container{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  margin:12px 0;background:rgba(255,255,255,0.03);border-radius:8px;
+  border:1px solid rgba(212,168,83,0.08);overflow:hidden
+}
+.news-ticker-label{font-size:16px;flex-shrink:0;color:#d4a853}
+.news-ticker-track{
+  overflow:hidden;white-space:nowrap;flex:1;
+  font-size:13px;color:rgba(255,255,255,0.6)
+}
+.news-ticker-track .ticker-content{display:inline-block;animation:tickerScroll 30s linear infinite}
+.news-ticker-track .ticker-item{display:inline;margin-right:60px;color:rgba(255,255,255,0.7)}
+.news-ticker-track .ticker-item::before{content:"•";color:#d4a853;margin-right:8px}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ==================== Action Grid ==================== */
+.action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.action-card{
+  padding:16px;border-radius:12px;background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);cursor:pointer;
+  transition:all 0.3s;text-align:center
+}
+.action-card:hover{
+  background:rgba(212,168,83,0.06);border-color:rgba(212,168,83,0.15);
+  transform:translateY(-1px)
+}
+.action-icon{font-size:28px;margin-bottom:8px;display:block}
+.action-icon-news{color:#2196f3}
+.action-icon-opp{color:#4caf50}
+.action-icon-guide{color:#d4a853}
+.action-icon-dd{color:#ff9800}
+.action-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:4px}
+.action-desc{font-size:11px;color:rgba(255,255,255,0.4)}
+
+/* ==================== Content Area ==================== */
+.content-area{
+  background:rgba(255,255,255,0.02);border-radius:12px;
+  border:1px solid rgba(255,255,255,0.06);min-height:120px;
+  padding:16px;margin-bottom:16px
+}
+.content-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:30px;color:rgba(255,255,255,0.3)
+}
+.placeholder-icon{font-size:36px;margin-bottom:8px;opacity:0.5}
+.content-placeholder p{font-size:13px}
+
+/* Content Items */
+.content-item{
+  padding:14px;border-bottom:1px solid rgba(255,255,255,0.05);
+  transition:background 0.3s
+}
+.content-item:last-child{border-bottom:none}
+.content-item:hover{background:rgba(255,255,255,0.02)}
+.content-item-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;line-height:1.5}
+.content-item-desc{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6}
+.content-item-meta{font-size:11px;color:rgba(212,168,83,0.5);margin-top:6px}
+.content-item-tag{
+  display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;
+  background:rgba(212,168,83,0.1);color:#d4a853;margin-right:4px
+}
+
+/* Loading Spinner */
+.content-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid rgba(212,168,83,0.2);border-top-color:#d4a853;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.content-loading span{font-size:13px;color:rgba(255,255,255,0.4)}
+
+/* ==================== Due Diligence Input ==================== */
+.dd-input-area{
+  padding:12px;display:flex;flex-direction:column;gap:10px
+}
+.dd-input-row{display:flex;gap:8px}
+.dd-input-row input{
+  flex:1;height:44px;padding:0 14px;border-radius:8px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+  color:#fff;font-size:14px;transition:border-color 0.3s
+}
+.dd-input-row input:focus{border-color:#d4a853}
+.dd-input-row input::placeholder{color:rgba(255,255,255,0.3)}
+.dd-btn{
+  padding:0 20px;border-radius:8px;font-size:13px;font-weight:600;
+  background:linear-gradient(135deg,#d4a853,#b8860b);color:#0a1628;
+  transition:all 0.3s;white-space:nowrap;height:44px;letter-spacing:1px
+}
+.dd-btn:hover{box-shadow:0 4px 12px rgba(212,168,83,0.3)}
+.dd-btn:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none}
+
+/* Report Styles */
+.report-section{margin-bottom:20px}
+.report-section-title{
+  font-size:16px;font-weight:700;color:#d4a853;margin-bottom:12px;
+  padding-bottom:6px;border-bottom:1px solid rgba(212,168,83,0.15)
+}
+.report-section-content{font-size:13px;line-height:1.8;color:rgba(255,255,255,0.8)}
+.report-section-content p{margin-bottom:8px}
+.report-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.report-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.report-table td:first-child{color:rgba(255,255,255,0.5);width:100px;font-weight:500}
+.report-table td:last-child{color:rgba(255,255,255,0.85)}
+.report-warning{color:#ff9800;background:rgba(255,152,0,0.08);padding:10px;border-radius:6px;font-size:12px;border-left:3px solid #ff9800;margin:8px 0}
+.report-success{color:#4caf50;background:rgba(76,175,80,0.08);padding:10px;border-radius:6px;font-size:12px;margin:8px 0}
+
+/* ==================== Guidelines ==================== */
+.guide-item{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:all 0.3s
+}
+.guide-item:hover{background:rgba(212,168,83,0.03);margin:0 -12px;padding:12px}
+.guide-item:last-child{border-bottom:none}
+.guide-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.guide-info{flex:1}
+.guide-info h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.guide-info p{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.5}
+
+/* ==================== Profile ==================== */
+.profile-header{
+  display:flex;align-items:center;gap:16px;padding:24px 0 20px;
+  border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:16px
+}
+.profile-avatar{
+  width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:28px;background:linear-gradient(135deg,rgba(212,168,83,0.2),rgba(184,134,11,0.3));
+  border:2px solid rgba(212,168,83,0.3);flex-shrink:0
+}
+.profile-info{flex:1}
+.profile-name{font-size:20px;font-weight:700;color:#fff;margin-bottom:2px}
+.profile-phone{font-size:13px;color:rgba(255,255,255,0.4)}
+.profile-badge{
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  background:linear-gradient(135deg,rgba(212,168,83,0.15),rgba(184,134,11,0.25));
+  color:#d4a853;border:1px solid rgba(212,168,83,0.2)
+}
+.profile-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px
+}
+.profile-stat{
+  text-align:center;padding:16px;border-radius:12px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)
+}
+.stat-value{font-size:24px;font-weight:700;color:#d4a853;margin-bottom:4px}
+.stat-label{font-size:12px;color:rgba(255,255,255,0.4)}
+.profile-menu{display:flex;flex-direction:column;gap:2px}
+.profile-menu-item{
+  display:flex;align-items:center;gap:12px;padding:16px;
+  border-radius:8px;transition:background 0.3s;width:100%;text-align:left
+}
+.profile-menu-item:hover{background:rgba(255,255,255,0.03)}
+.menu-icon{font-size:18px;width:24px;text-align:center;opacity:0.6}
+.menu-text{flex:1;font-size:15px;color:rgba(255,255,255,0.8)}
+.menu-arrow{font-size:14px;color:rgba(255,255,255,0.2)}
+.logout-text{color:#ef5350}
+
+/* ==================== Bottom Nav ==================== */
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  display:flex;background:rgba(10,22,40,0.98);backdrop-filter:blur(10px);
+  border-top:1px solid rgba(212,168,83,0.1);padding:6px 0;padding-bottom:env(safe-area-inset-bottom,6px)
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px;transition:all 0.3s;position:relative
+}
+.nav-icon{font-size:20px;color:rgba(255,255,255,0.3);transition:color 0.3s}
+.nav-label{font-size:10px;color:rgba(255,255,255,0.3);transition:color 0.3s}
+.nav-item.active .nav-icon{color:#d4a853}
+.nav-item.active .nav-label{color:#d4a853}
+.nav-item.active::after{
+  content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  width:24px;height:2px;background:#d4a853;border-radius:1px
+}
+
+/* ==================== Modal ==================== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.6);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;backdrop-filter:blur(4px)
+}
+.modal-overlay.active{display:flex}
+.modal-container{
+  width:100%;max-width:480px;max-height:80vh;overflow-y:auto;
+  background:#0d1f3c;border-radius:16px;border:1px solid rgba(212,168,83,0.15);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s ease
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid rgba(212,168,83,0.1);
+  position:sticky;top:0;background:#0d1f3c;z-index:1
+}
+.modal-header h3{font-size:17px;font-weight:600;color:#fff}
+.modal-close{font-size:24px;color:rgba(255,255,255,0.4);padding:4px;transition:color 0.3s;line-height:1}
+.modal-close:hover{color:#fff}
+.modal-body{padding:20px}
+
+/* Modal content styles */
+.modal-body .info-card{
+  background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;margin-bottom:12px
+}
+.modal-body .info-card h4{font-size:14px;color:#d4a853;margin-bottom:6px}
+.modal-body .info-card p{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
+.modal-body .info-list{list-style:none;padding:0}
+.modal-body .info-list li{
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;padding-left:16px;position:relative
+}
+.modal-body .info-list li::before{content:"•";position:absolute;left:4px;color:#d4a853}
+.modal-body .info-list li:last-child{border-bottom:none}
+
+.modal-body .tier-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.modal-body .tier-card{
+  padding:16px;border-radius:10px;text-align:center;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)
+}
+.modal-body .tier-card .tier-icon{font-size:24px;margin-bottom:6px}
+.modal-body .tier-card .tier-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
+.modal-body .tier-card .tier-desc{font-size:11px;color:rgba(255,255,255,0.5)}
+.modal-body .tier-card.active{border-color:#d4a853;background:rgba(212,168,83,0.06)}
+
+/* ==================== Responsive ==================== */
+@media(min-width:768px){
+  .app-page{max-width:600px;margin:0 auto}
+  #page-login .login-container{max-width:420px}
+  .modal-container{max-width:520px}
+  .action-grid{gap:12px}
+  .quick-actions{gap:12px}
+}
+@media(min-width:1024px){
+  .app-page{max-width:640px}
+}
+
+/* ==================== Animations ==================== */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.app-page.active-page{animation:fadeIn 0.35s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section-card{animation:slideUp 0.4s ease}
+.section-card:nth-child(2){animation-delay:0.1s}
+
+/* ==================== Scrollbar (mobile) ==================== */
+@media(max-width:480px){
+  ::-webkit-scrollbar{width:0;height:0}
+}
+
+/* Print */
+@media print{
+  #bottom-nav,#app-header,.modal-overlay{display:none!important}
+  body{background:#fff;color:#000}
+  #app-shell{padding:0}
+}
+
+.login-sep{display:flex;align-items:center;gap:8px;margin:8px 0;color:rgba(255,255,255,0.15);font-size:11px}
+.login-sep span{flex:1;height:1px;background:rgba(255,255,255,0.06)}
+.sep-text{flex:0!important;width:auto!important;background:none!important;text-align:center}
+.btn-guest{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.08);padding:10px 32px;font-size:13px;font-weight:500}
+.btn-guest:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:#d4a853}
+.guest-hint{text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:0}
+
+
+/* Write page */
+.write-section{margin-bottom:16px}
+.write-section-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;margin-top:4px}
+.write-subtitle{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;line-height:1.5}
+.doc-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.doc-type-card{padding:14px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:all 0.3s;text-align:center}
+.doc-type-card:hover{background:rgba(156,39,176,0.06);border-color:rgba(156,39,176,0.15)}
+.doc-type-card.active{background:rgba(156,39,176,0.1);border-color:#9c27b0}
+.doc-type-card.coming-soon{opacity:0.4;cursor:not-allowed;background:rgba(255,255,255,0.02)}
+.doc-type-card.coming-soon:hover{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.06)}
+.doc-type-card.coming-soon .dtype-icon{opacity:0.5}
+.dtype-icon{font-size:24px;margin-bottom:6px;display:block}
+.doc-type-card.active .dtype-icon{color:#9c27b0}
+.dtype-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.dtype-desc{font-size:10px;color:rgba(255,255,255,0.4)}
+.upload-list{display:flex;flex-direction:column;gap:6px}
+.upload-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);transition:all 0.3s}
+.upload-row.uploaded{border-color:rgba(76,175,80,0.3);background:rgba(76,175,80,0.04)}
+.upload-label{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.7)}
+.upl-icon{font-size:16px}
+.upload-status{display:flex;align-items:center;gap:6px}
+.upl-state{font-size:11px;color:rgba(255,255,255,0.3);min-width:40px;text-align:right}
+.upload-row.uploaded .upl-state{color:#4caf50}
+.upl-btn{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:500;background:rgba(212,168,83,0.12);color:#d4a853;transition:all 0.3s;white-space:nowrap}
+.upl-btn:hover{background:rgba(212,168,83,0.2)}
+.upl-filename{font-size:11px;color:#4caf50;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gen-section{text-align:center;padding:8px 0 16px}
+.btn-gen{width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;transition:all 0.3s;letter-spacing:2px}
+.btn-gen:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(156,39,176,0.3)}
+.btn-gen:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+.gen-hint{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px}
+.report-actions{display:flex;gap:10px;margin-bottom:12px}
+.btn-action{flex:1;padding:12px;border-radius:8px;font-size:13px;font-weight:600;background:rgba(212,168,83,0.1);color:#d4a853;border:1px solid rgba(212,168,83,0.2);transition:all 0.3s}
+.btn-action:hover{background:rgba(212,168,83,0.2)}
+.report-summary{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px}
+@media(max-width:400px){.doc-type-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* Ad Banner */
+.ad-banner{position:relative;background:linear-gradient(135deg,#1a2d4a,#0d1f3c);border-bottom:1px solid rgba(212,168,83,0.12);padding:10px 20px;cursor:pointer;overflow:hidden;min-height:52px;display:flex;align-items:center}
+.ad-slider{flex:1;display:flex;overflow:hidden;position:relative;height:32px;align-items:center}
+.ad-slide{display:flex;align-items:center;gap:8px;white-space:nowrap;animation:none;position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:0;transition:opacity 0.5s ease;width:100%}
+.ad-slide.active{opacity:1;position:relative;left:auto;top:auto;transform:none}
+.ad-tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;background:linear-gradient(135deg,#d4a853,#b8860b);color:#0a1628;flex-shrink:0}
+.ad-title{font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
+.ad-sub{font-size:11px;color:rgba(212,168,83,0.6);flex-shrink:0;display:none}
+@media(min-width:480px){.ad-sub{display:inline}}
+.ad-indicators{display:flex;gap:4px;margin:0 10px;flex-shrink:0}
+.ad-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s}
+.ad-dot.active{background:#d4a853;width:18px;border-radius:3px}
+.ad-close{font-size:14px;color:rgba(255,255,255,0.3);padding:2px 4px;flex-shrink:0;transition:color 0.3s}
+.ad-close:hover{color:rgba(255,255,255,0.6)}
+
+/* Global News Ticker */
+.global-ticker{display:flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(212,168,83,0.05);border-bottom:1px solid rgba(212,168,83,0.08);overflow:hidden}
+.ticker-label{font-size:11px;font-weight:600;flex-shrink:0;color:#d4a853;white-space:nowrap;margin-right:6px}
+.global-ticker .ticker-track{overflow:hidden;white-space:nowrap;flex:1;font-size:12px;color:rgba(255,255,255,0.55)}
+.global-ticker .ticker-track .ticker-content{display:inline-block;white-space:nowrap;animation:tickerScroll 30s linear infinite}
+.global-ticker .ticker-track .ticker-item{display:inline;margin-right:50px;cursor:pointer;transition:color 0.3s}
+.global-ticker .ticker-track .ticker-item:hover{color:#d4a853}
+.global-ticker .ticker-track .ticker-item::before{content:"\25CF";color:#d4a853;margin-right:6px;font-size:6px;vertical-align:middle}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+
+/* Points Bar */
+.points-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:3px 16px;background:rgba(212,168,83,0.04);border-bottom:1px solid rgba(212,168,83,0.06);font-size:11px}
+.pb-item{display:flex;align-items:center;gap:4px}
+.pb-icon{font-size:12px}
+.pb-label{color:rgba(255,255,255,0.35)}
+.pb-value{font-weight:700;color:#d4a853;font-size:12px}
+.pb-divider{width:1px;height:12px;background:rgba(255,255,255,0.08);margin:0 12px}
+
+
+/* Product Footer */
+.app-footer{padding:12px 16px 6px;background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.04)}
+.footer-content{display:flex;flex-direction:column;align-items:center;gap:4px}
+.footer-brand{display:flex;align-items:center;gap:5px}
+.footer-logo{font-size:14px;color:#d4a853}
+.footer-name{font-size:13px;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:1px}
+.footer-info{display:flex;flex-direction:column;align-items:center;gap:2px}
+.footer-line{font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:0.5px}
+.footer-version{font-size:9px;color:rgba(255,255,255,0.15)}
+
+</style>
+</head>
+<body>
+
+<!-- ==================== Loading Screen ==================== -->
+<div id="loading-screen">
+  <div class="loader-logo">
+    <div class="loader-icon">&#9670;</div>
+    <div class="loader-title">AI投行专家</div>
+    <div class="loader-sub">Intelligent Investment Banking</div>
+  </div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- ==================== Toast ==================== -->
+<div id="toast"></div>
+
+<!-- ==================== Login Page ==================== -->
+<div id="page-login" class="page">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="login-icon">&#9670;</div>
+      <h1>AI投行专家</h1>
+      <p>智能投行 · 专业赋能</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" data-tab="login">登录</button>
+      <button class="login-tab" data-tab="register">注册</button>
+    </div>
+    <form id="form-login" class="login-form active">
+      <div class="input-group">
+        <span class="input-icon">📱</span>
+        <input type="tel" id="login-phone" placeholder="手机号" maxlength="11" pattern="[0-9]*" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="login-password" placeholder="密码">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" onclick="loginSubmit(event)">登 录</button>
+      <p class="login-hint">注册后自动获得黄铜会员，每日签到升级</p>
+<div class="login-sep"><span></span><span class="sep-text">体验</span><span></span></div>
+<button type="button" class="btn btn-guest btn-full" id="guest-btn" onclick="guestEntry()">👤 游客模式直接体验</button>
+<p class="guest-hint">无需注册，点击即可使用全部功能</p>
+    </form>
+    <form id="form-register" class="login-form">
+      <div class="input-group">
+        <span class="input-icon">📱</span>
+        <input type="tel" id="reg-phone" placeholder="手机号" maxlength="11" pattern="[0-9]*" inputmode="numeric">
+      </div>
+      <div class="input-group input-group-code">
+        <span class="input-icon">✉️</span>
+        <input type="text" id="reg-code" placeholder="验证码" maxlength="6">
+        <button type="button" class="btn-code" id="btn-send-code">获取验证码</button>
+      </div>
+      <div class="input-group">
+        <span class="input-icon">👤</span>
+        <input type="text" id="reg-username" placeholder="用户名" maxlength="20">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="reg-password" placeholder="密码（至少6位）">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="reg-confirm" placeholder="确认密码">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" onclick="registerSubmit(event)">注 册</button>
+      <p class="login-hint">注册即表示同意《AI投行专家服务协议》</p>
+<div class="login-sep"><span></span><span class="sep-text">或</span><span></span></div>
+<button type="button" class="btn btn-guest btn-full" id="guest-btn" onclick="guestEntry()">👤 游客模式直接体验</button>
+    </form>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ==================== Main App Shell ==================== -->
+<div id="app-shell">
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="header-left">
+      <span class="header-greeting" id="header-greeting">你好</span>
+      <span class="header-name" id="header-name">用户</span>
+    </div>
+    <div class="header-right">
+      <span class="membership-badge" id="header-badge">黄铜</span>
+      <button class="header-btn" id="btn-header-profile" title="个人中心">&#9881;</button>
+    </div>
+  </header>
+
+  <!-- ==================== Points Bar ==================== -->
+  <div class="points-bar" id="points-bar">
+    <span class="pb-item">
+      <span class="pb-icon">💰</span>
+      <span class="pb-label">积分</span>
+      <span class="pb-value" id="pb-balance">0</span>
+    </span>
+    <span class="pb-divider"></span>
+    <span class="pb-item">
+      <span class="pb-icon">💧</span>
+      <span class="pb-label">累计消耗</span>
+      <span class="pb-value" id="pb-spent">0</span>
+    </span>
+  </div>
+
+  <!-- ==================== Ad Banner ==================== -->
+  <div class="ad-banner" id="ad-banner">
+    <div class="ad-slider" id="ad-slider">
+      <div class="ad-slide active" data-idx="0">
+        <span class="ad-tag">推荐</span>
+        <span class="ad-title">优智科技智能投顾</span>
+        <span class="ad-sub">AI驱动 · 智能决策 · 专业投顾</span>
+      </div>
+      <div class="ad-slide" data-idx="1">
+        <span class="ad-tag" style="background:#ff9800">新品</span>
+        <span class="ad-title">优智华为人工智能一体机</span>
+        <span class="ad-sub">算力赋能 · 智算未来 · 企业首选</span>
+      </div>
+    </div>
+    <div class="ad-indicators" id="ad-indicators">
+      <span class="ad-dot active"></span>
+      <span class="ad-dot"></span>
+    </div>
+    <button class="ad-close" onclick="closeAdBanner()">&#10005;</button>
+  </div>
+
+  <!-- ==================== Global News Ticker ==================== -->
+  <div class="global-ticker" id="global-ticker">
+    <span class="ticker-label">&#128293; 新闻热搜</span>
+    <div class="ticker-track" id="global-ticker-track">
+      <span class="ticker-content">加载中...</span>
+    </div>
+  </div>
+
+  <!-- ==================== Page: Home ==================== -->
+  <div id="page-home" class="page app-page active-page">
+    <!-- Membership Card -->
+    <div class="membership-card" id="membership-card">
+      <div class="member-bg-pattern"></div>
+      <div class="member-top">
+        <div>
+          <div class="member-level-label">当前会员</div>
+          <div class="member-level" id="member-level-display">
+            <span class="level-icon">&#9733;</span>
+            <span id="member-level-name">黄铜会员</span>
+          </div>
+        </div>
+        <button class="btn-checkin" id="btn-checkin">&#10003; 签到</button>
+      </div>
+      <div class="member-progress">
+        <div class="member-progress-info">
+          <span id="member-streak-text">已签到 0 天</span>
+          <span id="member-next-level">距白银还需 1 天</span>
+        </div>
+        <div class="member-progress-bar">
+          <div class="member-progress-fill" id="member-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="member-tiers">
+        <span class="tier active">&#9670; 黄铜</span>
+        <span class="tier-arrow">&#8594;</span>
+        <span class="tier">&#9670; 白银</span>
+        <span class="tier-arrow">&#8594;</span>
+        <span class="tier">&#9670; 黄金</span>
+        <span class="tier-arrow">&#8594;</span>
+        <span class="tier">&#9670; 钻石</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="navigateTo('debt')">
+        <span class="qa-icon qa-debt">&#9733;</span>
+        <span class="qa-label">债权投行</span>
+      </button>
+      <button class="qa-btn" onclick="navigateTo('equity')">
+        <span class="qa-icon qa-equity">&#9650;</span>
+        <span class="qa-label">股权投行</span>
+      </button>
+      <button class="qa-btn" onclick="showCheckinDetail()">
+        <span class="qa-icon qa-checkin">&#128197;</span>
+        <span class="qa-label">签到日历</span>
+      </button>
+      <button class="qa-btn" onclick="navigateTo('write')">
+        <span class="qa-icon qa-write">&#128276;</span>
+        <span class="qa-label">自动撰写</span>
+      </button>
+    </div>
+
+    <!-- Section Cards -->
+    <div class="section-cards">
+      <div class="section-card section-card-debt" onclick="navigateTo('debt')">
+        <div class="section-card-bg"></div>
+        <div class="section-card-content">
+          <div class="section-card-icon">&#9733;</div>
+          <h3>债权投行</h3>
+          <p>公司债 · 企业债 · ABS · REITs</p>
+          <div class="section-card-features">
+            <span>行业新闻</span><span>业务机会</span><span>发行指引</span><span>一键尽调</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-card section-card-equity" onclick="navigateTo('equity')">
+        <div class="section-card-bg"></div>
+        <div class="section-card-content">
+          <div class="section-card-icon">&#9650;</div>
+          <h3>股权投行</h3>
+          <p>IPO · 并购重组 · 新三板 · 股权融资</p>
+          <div class="section-card-features">
+            <span>行业新闻</span><span>业务机会</span><span>业务指引</span><span>一键尽调</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-card section-card-write" onclick="navigateTo('write')">
+        <div class="section-card-bg"></div>
+        <div class="section-card-content">
+          <div class="section-card-icon">&#9998;</div>
+          <h3>自动撰写</h3>
+          <p>AI尽调报告 · AI审计报告 · AI融资建议书</p>
+          <div class="section-card-features">
+            <span>上传文件</span><span>一键生成</span><span>预览报告</span><span>下载保存</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Page: Debt Section ==================== -->
+  <div id="page-debt" class="page app-page">
+    <div class="section-header">
+      <button class="back-btn" onclick="navigateTo('home')">&#8592;</button>
+      <h2>债权投行</h2>
+    </div>
+
+    <!-- News Ticker -->
+    <div class="news-ticker-container">
+      <div class="news-ticker-label">&#128240;</div>
+      <div class="news-ticker-track" id="debt-news-track">
+        <span>正在加载行业新闻...</span>
+      </div>
+    </div>
+
+    <!-- Action Grid -->
+    <div class="action-grid">
+      <!-- 行业新闻 -->
+      <div class="action-card" onclick="showNews('debt')">
+        <div class="action-icon action-icon-news">&#128240;</div>
+        <div class="action-title">行业新闻</div>
+        <div class="action-desc">公司债·企业债·ABS·REITs</div>
+      </div>
+      <!-- 业务机会 -->
+      <div class="action-card" onclick="showOpportunities('debt')">
+        <div class="action-icon action-icon-opp">&#128200;</div>
+        <div class="action-title">业务机会</div>
+        <div class="action-desc">一键生成业务线索</div>
+      </div>
+      <!-- 发行指引 -->
+      <div class="action-card" onclick="showGuidelines('debt')">
+        <div class="action-icon action-icon-guide">&#128214;</div>
+        <div class="action-title">发行指引</div>
+        <div class="action-desc">交易所·证监会规则</div>
+      </div>
+      <!-- 一键尽调 -->
+      <div class="action-card" onclick="showDueDiligence('debt')">
+        <div class="action-icon action-icon-dd">&#128269;</div>
+        <div class="action-title">一键尽调</div>
+        <div class="action-desc">AI生成债券尽调报告</div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area" id="debt-content">
+      <div class="content-placeholder">
+        <div class="placeholder-icon">&#128161;</div>
+        <p>点击上方功能卡片，AI 智能生成内容</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Page: Equity Section ==================== -->
+  <div id="page-equity" class="page app-page">
+    <div class="section-header">
+      <button class="back-btn" onclick="navigateTo('home')">&#8592;</button>
+      <h2>股权投行</h2>
+    </div>
+
+    <!-- News Ticker -->
+    <div class="news-ticker-container">
+      <div class="news-ticker-label">&#128240;</div>
+      <div class="news-ticker-track" id="equity-news-track">
+        <span>正在加载行业新闻...</span>
+      </div>
+    </div>
+
+    <!-- Action Grid -->
+    <div class="action-grid">
+      <div class="action-card" onclick="showNews('equity')">
+        <div class="action-icon action-icon-news">&#128240;</div>
+        <div class="action-title">行业新闻</div>
+        <div class="action-desc">IPO·并购·新三板·融资</div>
+      </div>
+      <div class="action-card" onclick="showOpportunities('equity')">
+        <div class="action-icon action-icon-opp">&#128200;</div>
+        <div class="action-title">业务机会</div>
+        <div class="action-desc">一键生成股权线索</div>
+      </div>
+      <div class="action-card" onclick="showGuidelines('equity')">
+        <div class="action-icon action-icon-guide">&#128214;</div>
+        <div class="action-title">业务指引</div>
+        <div class="action-desc">IPO·信息披露·并购规则</div>
+      </div>
+      <div class="action-card" onclick="showDueDiligence('equity')">
+        <div class="action-icon action-icon-dd">&#128269;</div>
+        <div class="action-title">一键尽调</div>
+        <div class="action-desc">AI生成股权尽调报告</div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area" id="equity-content">
+      <div class="content-placeholder">
+        <div class="placeholder-icon">&#128161;</div>
+        <p>点击上方功能卡片，AI 智能生成内容</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ==================== Page: Write (自动撰写) ==================== -->
+  <div id="page-write" class="page app-page">
+    <div class="section-header">
+      <button class="back-btn" onclick="navigateTo('home')">&#8592;</button>
+      <h2>自动撰写</h2>
+    </div>
+
+    <div class="write-section">
+      <div class="write-section-title">选择报告类型</div>
+      <div class="doc-type-grid">
+        <div class="doc-type-card active" data-type="dd" onclick="selectDocType('dd', this)">
+          <div class="dtype-icon">&#128203;</div>
+          <div class="dtype-name">AI尽调报告</div>
+          <div class="dtype-desc">基于上传资料生成</div>
+        </div>
+        <div class="doc-type-card" data-type="audit" onclick="selectDocType('audit', this)">
+          <div class="dtype-icon">&#128202;</div>
+          <div class="dtype-name">AI审计报告</div>
+          <div class="dtype-desc">基于上传资料生成</div>
+        </div>
+        <div class="doc-type-card" data-type="proposal" onclick="selectDocType('proposal', this)">
+          <div class="dtype-icon">&#128188;</div>
+          <div class="dtype-name">AI融资建议书</div>
+          <div class="dtype-desc">基于上传资料生成</div>
+        </div>
+        <div class="doc-type-card coming-soon">
+          <div class="dtype-icon">&#128274;</div>
+          <div class="dtype-name">IPO招股说明书</div>
+          <div class="dtype-desc">有待开通</div>
+        </div>
+        <div class="doc-type-card coming-soon">
+          <div class="dtype-icon">&#128274;</div>
+          <div class="dtype-name">债权募集说明书</div>
+          <div class="dtype-desc">有待开通</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="write-section" id="upload-section">
+      <div class="write-section-title">上传参考文件</div>
+      <div class="write-subtitle">上传相关文件作为AI撰写的参考依据（支持pdf、doc、docx）</div>
+      
+      <div class="upload-list" id="upload-list">
+        <div class="upload-row" data-key="legal">
+          <div class="upload-label"><span class="upl-icon">&#128220;</span><span>法律意见书</span></div>
+          <div class="upload-status" id="status-legal">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('legal')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="audit">
+          <div class="upload-label"><span class="upl-icon">&#128200;</span><span>审计报告</span></div>
+          <div class="upload-status" id="status-audit">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('audit')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="financial">
+          <div class="upload-label"><span class="upl-icon">&#128176;</span><span>会计报表</span></div>
+          <div class="upload-status" id="status-financial">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('financial')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="dd_report">
+          <div class="upload-label"><span class="upl-icon">&#128269;</span><span>尽调报告</span></div>
+          <div class="upload-status" id="status-dd_report">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('dd_report')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="industry">
+          <div class="upload-label"><span class="upl-icon">&#128240;</span><span>行业研究报告</span></div>
+          <div class="upload-status" id="status-industry">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('industry')">选择文件</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-section" id="gen-section">
+      <button class="btn-gen" id="btn-generate" onclick="generateWriteReport()" disabled>&#9889; 一键生成报告</button>
+      <p class="gen-hint" id="gen-hint">请先选择报告类型并上传参考文件</p>
+    </div>
+
+    <div class="content-area" id="write-result" style="display:none">
+      <div class="report-actions">
+        <button class="btn-action" onclick="previewWriteReport()">&#128065; 预览报告</button>
+        <button class="btn-action" onclick="downloadWriteReport()">&#128229; 下载报告</button>
+      </div>
+      <div class="report-summary" id="report-summary"></div>
+    </div>
+  </div>
+
+  <!-- ==================== Page: Profile ==================== -->
+  <div id="page-profile" class="page app-page">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profile-avatar">&#128100;</div>
+      <div class="profile-info">
+        <div class="profile-name" id="profile-name">用户</div>
+        <div class="profile-phone" id="profile-phone">138****0000</div>
+      </div>
+      <div class="profile-badge" id="profile-badge">黄铜会员</div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="stat-value" id="stat-checkin">0</div>
+        <div class="stat-label">签到天数</div>
+      </div>
+      <div class="profile-stat">
+        <div class="stat-value" id="stat-streak">0</div>
+        <div class="stat-label">连续签到</div>
+      </div>
+      <div class="profile-stat">
+        <div class="stat-value" id="stat-level">黄铜</div>
+        <div class="stat-label">当前等级</div>
+      </div>
+      <div class="profile-stat">
+        <div class="stat-value" id="stat-points">0</div>
+        <div class="stat-label">积分</div>
+      </div>
+    </div>
+    <div class="profile-menu">
+      <button class="profile-menu-item" onclick="showMemberInfo()">
+        <span class="menu-icon">&#9733;</span>
+        <span class="menu-text">会员权益说明</span>
+        <span class="menu-arrow">&#8594;</span>
+      </button>
+      <button class="profile-menu-item" onclick="showPointsHistory()">
+        <span class="menu-icon">&#128176;</span>
+        <span class="menu-text">积分明细</span>
+        <span class="menu-arrow">&#8594;</span>
+      </button>
+      <button class="profile-menu-item" onclick="showAbout()">
+        <span class="menu-icon">&#8505;</span>
+        <span class="menu-text">关于 AI投行专家</span>
+        <span class="menu-arrow">&#8594;</span>
+      </button>
+      <button class="profile-menu-item" onclick="handleLogout()">
+        <span class="menu-icon">&#128682;</span>
+        <span class="menu-text logout-text">退出登录</span>
+        <span class="menu-arrow">&#8594;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  
+  <!-- ==================== Product Footer ==================== -->
+  <div class="app-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="footer-logo">&#9670;</span>
+        <span class="footer-name">AI投行专家</span>
+      </div>
+      <div class="footer-info">
+        <span class="footer-line">深圳市金证优智科技有限公司</span>
+        <span class="footer-version">版本 1.0.0</span>
+      </div>
+    </div>
+  </div>
+
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-page="home" onclick="navigateTo('home')">
+      <span class="nav-icon">&#127968;</span>
+      <span class="nav-label">首页</span>
+    </button>
+    <button class="nav-item" data-page="debt" onclick="navigateTo('debt')">
+      <span class="nav-icon">&#9733;</span>
+      <span class="nav-label">债权</span>
+    </button>
+    <button class="nav-item" data-page="equity" onclick="navigateTo('equity')">
+      <span class="nav-icon">&#9650;</span>
+      <span class="nav-label">股权</span>
+    </button>
+    <button class="nav-item" data-page="write" onclick="navigateTo('write')">
+      <span class="nav-icon">&#9998;</span>
+      <span class="nav-label">撰写</span>
+    </button>
+    <button class="nav-item" data-page="profile" onclick="navigateTo('profile')">
+      <span class="nav-icon">&#128100;</span>
+      <span class="nav-label">我的</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ==================== Modal Overlay ==================== -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+  <div class="modal-container" id="modal-container">
+    <div class="modal-header">
+      <h3 id="modal-title">标题</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <p>内容加载中...</p>
+    </div>
+  </div>
+</div>
+
+<script>/* ==================== AI Investment Banking Expert ==================== */
+
+// ======================== STATE ========================
+var API_BASE = 'http://localhost:3001';
+const APP = {
+  user: null,
+  users: JSON.parse(localStorage.getItem('aib_users') || '{}'),
+  currentPage: 'login',
+  newsInterval: null,
+  tickerInterval: null
+};
+
+// ======================== UTILITY ========================
+function $id(id) { return document.getElementById(id); }
+function esc(s) { var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function showToast(msg, type) {
+  const t = $id('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function saveUsers() {
+  localStorage.setItem('aib_users', JSON.stringify(APP.users));
+}
+
+function formatPhone(p) {
+  if (!p || p.length < 11) return p;
+  return p.slice(0, 3) + '****' + p.slice(7);
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function daysBetween(a, b) {
+  const d1 = new Date(a), d2 = new Date(b);
+  return Math.floor((d2 - d1) / (86400000));
+}
+
+
+// ======================== AD BANNER CONFIG ========================
+// 管理员可在此修改广告内容、图片路径和链接
+var AD_CONFIG = [
+  {
+    id: 'ad1',
+    title: '优智科技智能投顾',
+    subtitle: 'AI驱动 · 智能决策 · 专业投顾',
+    image: 'images/AI智能投顾@10x.jpg',
+    tag: '推荐',
+    link: '#'
+  },
+  {
+    id: 'ad2',
+    title: '优智华为人工智能一体机',
+    subtitle: '算力赋能 · 智算未来 · 企业首选',
+    image: 'images/一体机@10x.jpg',
+    tag: '新品',
+    link: '#'
+  }
+];
+
+// ======================== TRENDING NEWS ========================
+// 可替换为真实API数据
+var TRENDING_NEWS = [
+  '注册制下IPO审核问询趋于精细化，监管层压实中介机构责任',
+  '公司债发行规模同比增长15%，绿色债券成新增长点',
+  '公募REITs试点扩围至商业地产，多家企业密集申报',
+  'ABS产品结构持续创新，知识产权ABS和数据资产ABS加速落地',
+  '并购重组市场回暖，产业整合型交易占比显著提升',
+  '央行降准释放流动性，债市收益率曲线趋于平坦化',
+  '科创板做市商制度运行效果良好，市场流动性改善明显',
+  '企业债注册制改革深化，审核效率大幅提升',
+  'S基金发展提速，为股权投资提供多元化退出渠道',
+  '北交所上市公司质量稳步提升，市场功能不断完善',
+  '上市公司回购增持活跃，股权激励方案创新增多',
+  '银行间市场ABS发行规模同比增长，不良资产ABS创新高',
+  '跨境并购监管新规落地，鼓励产业升级型海外并购',
+  '可转债市场持续扩容，成为再融资重要工具',
+  '投行执业质量评价体系完善，分类监管推动行业良性发展'
+];
+// ======================== MEMBERSHIP ========================
+const LEVELS = [
+  { key: 'bronze',  name: '黄铜', icon: '🥉', minStreak: 0,  color: '#cd7f32' },
+  { key: 'silver',  name: '白银', icon: '🥈', minStreak: 1,  color: '#c0c0c0' },
+  { key: 'gold',    name: '黄金', icon: '🥇', minStreak: 7,  color: '#d4a853' },
+  { key: 'diamond', name: '钻石', icon: '💎', minStreak: 30, color: '#b9f2ff' }
+];
+
+function getLevel(streak) {
+  let lv = LEVELS[0];
+  for (const l of LEVELS) {
+    if (streak >= l.minStreak) lv = l;
+  }
+  return lv;
+}
+
+function getNextLevel(streak) {
+  for (const l of LEVELS) {
+    if (streak < l.minStreak) return l;
+  }
+  return null;
+}
+
+function getStreakProgress(streak) {
+  const cur = getLevel(streak);
+  const next = getNextLevel(streak);
+  if (!next) return 100;
+  const range = next.minStreak - cur.minStreak;
+  const done = streak - cur.minStreak;
+  return Math.min(100, Math.round((done / range) * 100));
+}
+
+// ======================== AUTH ========================
+function handleLogin(e) {
+  e.preventDefault();
+  const phone = $id('login-phone').value.trim();
+  const pwd = $id('login-password').value.trim();
+  if (!phone || phone.length !== 11) return showToast('请输入正确的手机号', 'error');
+  if (!pwd) return showToast('请输入密码', 'error');
+  const user = APP.users[phone];
+  if (!user) return showToast('该手机号未注册', 'error');
+  if (user.password !== pwd) return showToast('密码错误', 'error');
+  loginSession(phone);
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const phone = $id('reg-phone').value.trim();
+  const code = $id('reg-code').value.trim();
+  const uname = $id('reg-username').value.trim();
+  const pwd = $id('reg-password').value.trim();
+  const confirm = $id('reg-confirm').value.trim();
+  if (!phone || phone.length !== 11) return showToast('请输入正确的手机号', 'error');
+  if (!code) return showToast('请输入验证码', 'error');
+  if (code !== '123456' && code !== '888888') return showToast('验证码错误（测试可用: 123456）', 'error');
+  if (!uname) return showToast('请输入用户名', 'error');
+  if (pwd.length < 6) return showToast('密码至少6位', 'error');
+  if (pwd !== confirm) return showToast('两次密码不一致', 'error');
+  if (APP.users[phone]) return showToast('该手机号已注册', 'error');
+  APP.users[phone] = {
+    phone, username: uname, password: pwd,
+    level: 'bronze', checkinDays: 0, streak: 0, lastCheckin: null,
+    totalCheckins: 0, createdAt: new Date().toISOString()
+  };
+  saveUsers();
+  showToast('注册成功！欢迎成为黄铜会员', 'success');
+  loginSession(phone);
+}
+
+function loginSession(phone) {
+  APP.user = APP.users[phone];
+  // Ensure points properties exist for legacy users
+  if (APP.user.points === undefined || APP.user.points === 0) APP.user.points = 500;
+  if (!APP.user.pointsHistory) APP.user.pointsHistory = [];
+  localStorage.setItem('aib_session', phone);
+  showApp();
+}
+
+function handleLogout() {
+  if (!confirm('确定退出登录吗？')) return;
+  localStorage.removeItem('aib_session');
+  APP.user = null;
+  APP.currentPage = 'login';
+  showLogin();
+}
+
+function checkSession() {
+  const phone = localStorage.getItem('aib_session');
+  if (phone && APP.users[phone]) {
+    APP.user = APP.users[phone];
+    // Ensure points properties for demo
+    if (APP.user.points === undefined || APP.user.points === 0) APP.user.points = 500;
+    if (!APP.user.pointsHistory) APP.user.pointsHistory = [];
+    refreshUser();
+    return true;
+  }
+  return false;
+}
+
+// ======================== UI: SHOW/HIDE ========================
+function showLogin() {
+  $id('page-login').classList.add('active-page');
+  $id('app-shell').classList.remove('active');
+  $id('loading-screen').classList.add('hide');
+}
+
+function showApp() {
+  $id('page-login').classList.remove('active-page');
+  $id('app-shell').classList.add('active');
+  $id('loading-screen').classList.add('hide');
+  refreshUser();
+  navigateTo('home');
+  loadTickers();
+  updatePointsBar();
+}
+
+function refreshUser() {
+  if (!APP.user) return;
+  const u = APP.user;
+  // Check if streak is still alive
+  const last = u.lastCheckin;
+  if (last) {
+    const diff = daysBetween(last, today());
+    if (diff > 1) u.streak = 0;
+  }
+  // Update level based on streak
+  const lv = getLevel(u.streak);
+  u.level = lv.key;
+
+  // Update header
+  const hour = new Date().getHours();
+  let greeting = '你好';
+  if (hour < 6) greeting = '夜深了';
+  else if (hour < 12) greeting = '早上好';
+  else if (hour < 14) greeting = '中午好';
+  else if (hour < 18) greeting = '下午好';
+  else greeting = '晚上好';
+  $id('header-greeting').textContent = greeting;
+  $id('header-name').textContent = u.username;
+  $id('header-badge').textContent = lv.name + '会员';
+  $id('header-badge').style.borderColor = lv.color;
+
+  // Profile
+  $id('profile-name').textContent = u.username;
+  $id('profile-phone').textContent = formatPhone(u.phone);
+  const badge = $id('profile-badge');
+  badge.textContent = lv.name + '会员';
+  badge.style.borderColor = lv.color;
+  badge.style.color = lv.color;
+
+  // Stats
+  $id('stat-checkin').textContent = u.totalCheckins || 0;
+  $id('stat-streak').textContent = u.streak;
+  $id('stat-level').textContent = lv.name;
+
+  // Membership card
+  $id('member-level-name').textContent = lv.name + '会员';
+  const btn = $id('btn-checkin');
+  if (u.lastCheckin === today()) {
+    btn.textContent = '✓ 已签到';
+    btn.classList.add('done');
+    btn.disabled = true;
+  } else {
+    btn.textContent = '+ 签到';
+    btn.classList.remove('done');
+    btn.disabled = false;
+  }
+  const streak = u.streak || 0;
+  $id('member-streak-text').textContent = '已签到 ' + streak + ' 天';
+  const next = getNextLevel(streak);
+  if (next) {
+    $id('member-next-level').textContent = '距' + next.name + '还需 ' + (next.minStreak - streak) + ' 天';
+  } else {
+    $id('member-next-level').textContent = '已达最高等级 🎉';
+  }
+  $id('member-progress-fill').style.width = getStreakProgress(streak) + '%';
+
+  // Tier indicators
+  document.querySelectorAll('.member-tiers .tier').forEach((el, i) => {
+    const l = LEVELS[i];
+    el.classList.toggle('active', streak >= l.minStreak);
+    el.style.color = streak >= l.minStreak ? l.color : '';
+  });
+
+  saveUsers();
+
+  updatePointsBar();}
+
+// ======================== CHECKIN ========================
+function handleCheckin() {
+  const u = APP.user;
+  if (!u) return;
+  if (u.lastCheckin === today()) return showToast('今日已签到', 'warning');
+  
+  // 调后端API签到
+  if (u.id) {
+    fetch(API_BASE + '/api/membership/checkin', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({userId: u.id})
+    }).then(function(r){return r.json()}).catch(function(){});
+  }
+  
+  const last = u.lastCheckin;
+  if (last) {
+    const diff = daysBetween(last, today());
+    if (diff === 1) u.streak = (u.streak || 0) + 1;
+    else u.streak = 1;
+  } else {
+    u.streak = 1;
+  }
+  u.lastCheckin = today();
+  u.totalCheckins = (u.totalCheckins || 0) + 1;
+  u.checkinDays = (u.checkinDays || 0) + 1;
+  const lv = getLevel(u.streak);
+  u.level = lv.key;
+  saveUsers();
+  refreshUser();
+  showToast('签到成功！当前连续 ' + u.streak + ' 天，' + lv.name + '会员', 'success');
+}
+
+function showCheckinDetail() {
+  const u = APP.user;
+  if (!u) return;
+  const lv = getLevel(u.streak);
+  const next = getNextLevel(u.streak);
+  let html = '<div class="info-card"><h4>📊 签到统计</h4>';
+  html += '<p>总签到天数：' + (u.totalCheckins || 0) + ' 天</p>';
+  html += '<p>连续签到：' + (u.streak || 0) + ' 天</p>';
+  html += '<p>当前等级：' + lv.name + '会员</p>';
+  if (next) html += '<p>下一等级：' + next.name + '（还需 ' + (next.minStreak - (u.streak || 0)) + ' 天）</p>';
+  else html += '<p>🎉 已达最高等级！</p>';
+  html += '</div>';
+  html += '<div class="info-card"><h4>📅 会员等级说明</h4><ul class="info-list">';
+  for (const l of LEVELS) {
+    html += '<li><strong>' + l.icon + ' ' + l.name + '</strong>：连续签到 ' + l.minStreak + ' 天' + (l.minStreak === 0 ? '（注册即享）' : '') + '</li>';
+  }
+  html += '</ul></div>';
+  openModal('签到详情', html);
+}
+
+function showSubscription() {
+  let html = '<div class="info-card"><h4>💎 会员权益</h4><p>每日签到即可享受会员升级，连续签到天数越多，等级越高。</p></div>';
+  html += '<div class="tier-grid">';
+  for (const l of LEVELS) {
+    const active = APP.user && getLevel(APP.user.streak).key === l.key;
+    html += '<div class="tier-card' + (active ? ' active' : '') + '">';
+    html += '<div class="tier-icon">' + l.icon + '</div>';
+    html += '<div class="tier-name">' + l.name + '</div>';
+    html += '<div class="tier-desc">连续 ' + l.minStreak + ' 天' + (l.minStreak === 0 ? '（注册即享）' : '') + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  openModal('会员订阅', html);
+}
+
+function showMemberInfo() {
+  showSubscription();
+}
+
+function showAbout() {
+  const html = '<div class="info-card"><h4>🤖 AI投行专家</h4><p>版本 1.0.0</p><p>AI投行专家是一款智能投行辅助工具，通过AI大模型技术，为投行从业者提供行业新闻、业务机会、监管指引、尽调报告等一站式服务。</p></div><div class="info-card"><h4>📋 功能模块</h4><ul class="info-list"><li>债权投行：公司债·企业债·ABS·REITs</li><li>股权投行：IPO·并购重组·新三板·股权融资</li></ul></div><p style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;margin-top:12px;">© 2026 AI投行专家 · 智能投行赋能平台</p>';
+  openModal('关于', html);
+}
+
+// ======================== NAVIGATION ========================
+function navigateTo(page) {
+  APP.currentPage = page;
+  // Hide all app pages - also clear any inline display styles
+  var allPages = document.querySelectorAll('#app-shell .app-page');
+  for (var ni = 0; ni < allPages.length; ni++) {
+    allPages[ni].style.display = '';
+    allPages[ni].classList.remove('active-page');
+  }
+  // Show target
+  const target = $id('page-' + page);
+  if (target) {
+    target.style.display = '';
+    target.classList.add('active-page');
+  }
+  // Update nav
+  var navItems = document.querySelectorAll('#bottom-nav .nav-item');
+  for (var nni = 0; nni < navItems.length; nni++) {
+    navItems[nni].classList.remove('active');
+    if (navItems[nni].getAttribute('data-page') === page) {
+      navItems[nni].classList.add('active');
+    }
+  }
+  // Refresh
+  if (page === 'home') refreshUser();
+  if (page === 'profile') refreshUser();
+  if (page === 'debt' || page === 'equity') loadTickers();
+  // Scroll to top
+  window.scrollTo(0, 0);
+}
+
+// ======================== MODAL ========================
+function openModal(title, bodyHTML) {
+  $id('modal-title').textContent = title;
+  $id('modal-body').innerHTML = bodyHTML;
+  $id('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  $id('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  resumeAdRotation();
+}
+
+// ======================== NEWS TICKER ========================
+const MOCK_DEBT_NEWS = [
+  '证监会发布公司债注册制改革新规，简化发行流程',
+  '2026年ABS市场持续扩容，不良资产ABS发行创新高',
+  '发改委：企业债审核效率提升，平均审批周期缩短至20个工作日',
+  '公募REITs试点范围扩大至商业地产领域，多家企业申报',
+  '公司债违约率持续低位运行，信用分化格局加剧',
+  '上交所修订公司债券上市规则，强化信息披露要求',
+  '银行间市场企业债券发行规模同比增长15%',
+  '首批消费基础设施REITs正式上市交易，市场反响热烈',
+  '绿色公司债券发行指引更新，鼓励低碳产业融资',
+  'ABS产品结构创新频现，知识产权ABS、数据资产ABS探索落地'
+];
+
+const MOCK_EQUITY_NEWS = [
+  '全面注册制下IPO审核节奏平稳，科创板申报活跃',
+  '并购重组市场回暖，产业整合型交易占比提升',
+  '新三板深化改革持续推进，北交所上市公司质量稳步提升',
+  '证监会发布上市公司信息披露新规，强化ESG披露',
+  '股权融资市场活跃，新能源、半导体等领域融资规模领先',
+  '跨境并购监管新规出台，鼓励产业升级型海外并购',
+  '科创板做市商制度运行良好，流动性显著改善',
+  'IPO审核问询趋精细化，中介机构责任进一步压实',
+  '上市公司回购增持活跃，股权激励方案创新增多',
+  'S基金发展提速，为股权投资提供多元化退出渠道'
+];
+
+function getNews(type) {
+  return type === 'debt' ? MOCK_DEBT_NEWS : MOCK_EQUITY_NEWS;
+}
+
+function loadTickers() {
+  const debtTrack = $id('debt-news-track');
+  const equityTrack = $id('equity-news-track');
+  const debtNews = getNews('debt');
+  const equityNews = getNews('equity');
+  // Debt ticker
+  let html = '<span class="ticker-content">';
+  for (let i = 0; i < 2; i++) {
+    for (const n of debtNews) {
+      html += '<span class="ticker-item">' + n + '</span>';
+    }
+  }
+  html += '</span>';
+  debtTrack.innerHTML = html;
+  // Equity ticker
+  html = '<span class="ticker-content">';
+  for (let i = 0; i < 2; i++) {
+    for (const n of equityNews) {
+      html += '<span class="ticker-item">' + n + '</span>';
+    }
+  }
+  html += '</span>';
+  equityTrack.innerHTML = html;
+}
+
+// ======================== AI SIMULATION ========================
+function simulateAI(callback, delay) {
+  const el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  el.innerHTML = '<div class="content-loading"><div class="spinner"></div><span>AI 智能搜索中...</span></div>';
+  setTimeout(() => {
+    el.innerHTML = '';
+    callback(el);
+  }, delay || 1500);
+}
+
+// ======================== NEWS ========================
+var _newsResults = [];
+
+function showNews(type) {
+  if (!spendPoints(5, '行业新闻搜索')) return;
+  var keyword = type === 'debt' ? '债券金融机构' : 'IPO 并购 重组 新三板 股权融资';
+  var apiPath = type === 'debt' ? '/api/debt/news' : '/api/equity/news';
+  var el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  el.innerHTML = '<div class="content-loading"><div class="spinner"></div><span>AI 智能搜索中...</span></div>';
+  
+  fetch(API_BASE + apiPath + '?keyword=' + encodeURIComponent(keyword))
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success && result.data && result.data.length > 0) {
+      _newsResults = result.data;
+      var html = '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;">🤖 由 DeepSeek 大模型实时生成</div>';
+      for (var i = 0; i < result.data.length; i++) {
+        var n = result.data[i];
+        html += '<div class="content-item" onclick="openNewsDetail(' + i + ')">';
+        html += '<div class="content-item-title">' + esc(n.title) + '</div>';
+        html += '<div class="content-item-desc" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:4px;line-height:1.5;">' + esc(n.summary || n.title) + '</div>';
+        html += '<div class="content-item-meta" style="margin-top:6px;">';
+        if (n.source) html += '<span>' + esc(n.source) + '</span>';
+        if (n.date) html += '<span>' + esc(n.date) + '</span>';
+        if (n.tag) html += '<span>' + esc(n.tag) + '</span>';
+        html += '</div></div>';
+      }
+      el.innerHTML = html;
+    } else {
+      fallbackNews(type, el);
+    }
+  })
+  .catch(function() { fallbackNews(type, el); });
+}
+
+function fallbackNews(type, el) {
+  if (!el) el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  var news = getNews(type);
+  _newsResults = news.map(function(t){ return {title:t, summary:t, source:'本地数据', date:today(), tag:''}; });
+  var html = '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;">📋 本地数据（后端不可用）</div>';
+  for (var i = 0; i < news.length; i++) {
+    html += '<div class="content-item" onclick="openNewsDetail(' + i + ')">';
+    html += '<div class="content-item-title">' + news[i] + '</div>';
+    html += '<div class="content-item-desc" style="font-size:12px;color:rgba(255,255,255,.45);margin-top:4px;">AI智能采集 · 点击查看详情</div>';
+    html += '<div class="content-item-meta" style="margin-top:6px;"><span>' + today() + '</span><span>本地数据</span></div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function openNewsDetail(idx) {
+  var n = _newsResults[idx];
+  if (!n) return;
+  var html = '<div class="info-card" style="margin-bottom:12px;">';
+  html += '<h4 style="font-size:15px;color:#fff;margin-bottom:8px;line-height:1.5;">' + esc(n.title) + '</h4>';
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">';
+  if (n.source) html += '<span style="background:rgba(212,168,83,.1);padding:2px 8px;border-radius:4px;font-size:11px;color:#d4a853;">' + esc(n.source) + '</span>';
+  if (n.date) html += '<span style="background:rgba(255,255,255,.04);padding:2px 8px;border-radius:4px;font-size:11px;color:rgba(255,255,255,.4);">' + esc(n.date) + '</span>';
+  if (n.tag) html += '<span style="background:rgba(76,175,80,.1);padding:2px 8px;border-radius:4px;font-size:11px;color:#4caf50;">' + esc(n.tag) + '</span>';
+  html += '</div>';
+  html += '<p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.8;">' + esc(n.summary || n.title) + '</p>';
+  html += '</div>';
+  html += '<p style="font-size:11px;color:rgba(255,255,255,.2);">来源: ' + esc(n.source||'AI智能采集') + ' | 日期: ' + esc(n.date||'') + '</p>';
+  openModal('新闻详情', html);
+}
+
+// ======================== OPPORTUNITIES ========================
+var _MOCK_DEBT_OPPS = [
+  { title: '某城投公司拟发行企业债15亿元，期限5年', desc: '主体评级AA+，资金用于城市更新项目，招标截止日期2026年7月', tag: '企业债', company: '某城投公司', amount: '15亿元', type: '招投标', region: '待定', date: '2026-06-24' },
+  { title: '某大型国企申请注册公司债50亿元', desc: '主体评级AAA，承销商招标中，预计9月发行', tag: '公司债', company: '某大型国企', amount: '50亿元', type: '项目信息', region: '待定', date: '2026-06-23' },
+  { title: '某租赁公司ABS项目（底层资产为设备租赁）', desc: '发行规模8亿元，优先级AAA评级，计划8月发行', tag: 'ABS', company: '某租赁公司', amount: '8亿元', type: '项目信息', region: '待定', date: '2026-06-22' },
+  { title: '某产业园区REITs扩募申请已提交', desc: '拟扩募规模12亿元，底层资产为产业园物业', tag: 'REITs', company: '某产业园区', amount: '12亿元', type: '项目信息', region: '待定', date: '2026-06-21' },
+  { title: '某交通集团企业债即将到期（2026年10月）', desc: '存量债券45亿元，到期收益率3.8%，建议提前关注续发计划', tag: '到期预警', company: '某交通集团', amount: '45亿元', type: '债券续期', region: '待定', date: '2026-06-20' },
+  { title: '某能源集团ABS产品在交易所获批', desc: '发行规模20亿元，原始权益人评级AAA，预计四季度发行', tag: 'ABS', company: '某能源集团', amount: '20亿元', type: '项目信息', region: '待定', date: '2026-06-19' }
+];
+
+var _MOCK_EQUITY_OPPS = [
+  { title: '某半导体企业启动A轮股权融资', desc: '估值30亿元，计划融资5亿元，已有数家知名机构跟进', tag: '股权融资', company: '某半导体企业', amount: '5亿元', type: '股权融资', region: '待定', date: '2026-06-24' },
+  { title: '某生物医药公司启动IPO辅导备案', desc: '拟科创板上市，辅导券商为头部券商，预计2027年申报', tag: 'IPO辅导', company: '某生物医药公司', amount: '待定', type: 'IPO辅导', region: '待定', date: '2026-06-23' },
+  { title: '某新能源企业与上市公司洽谈并购重组', desc: '拟通过重大资产重组注入上市公司，交易金额预计超20亿元', tag: '并购重组', company: '某新能源企业', amount: '20亿元', type: '并购重组', region: '待定', date: '2026-06-22' },
+  { title: '某科技公司完成股份制改造', desc: '整体变更为股份有限公司，为后续IPO做准备', tag: '股份制改制', company: '某科技公司', amount: '待定', type: '股份制改制', region: '待定', date: '2026-06-21' },
+  { title: '某新材料企业计划新三板挂牌', desc: '已与券商签署推荐挂牌协议，计划2026年底前完成挂牌', tag: '新三板', company: '某新材料企业', amount: '待定', type: '新三板挂牌', region: '待定', date: '2026-06-20' },
+  { title: '某消费品牌启动Pre-IPO融资', desc: '估值50亿元，计划融资8亿元，多家PE关注中', tag: '股权融资', company: '某消费品牌', amount: '8亿元', type: '股权融资', region: '待定', date: '2026-06-19' }
+];
+
+function showOpportunities(type) {
+  if (!spendPoints(10, '业务机会搜索')) return;
+  var keyword = type === 'debt' ? '债券投行 业务机会' : '股权投行 业务机会 IPO辅导 新三板 并购重组 Pre-IPO';
+  var apiPath = type === 'debt' ? '/api/debt/opportunities' : '/api/equity/opportunities';
+  var el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  el.innerHTML = '<div class="content-loading"><div class="spinner"></div><span>AI 正在搜索业务机会...</span></div>';
+  
+  fetch(API_BASE + apiPath + '?keyword=' + encodeURIComponent(keyword))
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success && result.data && result.data.length > 0) {
+      renderOpps(result.data, el);
+    } else {
+      fallbackOpps(type, el);
+    }
+  })
+  .catch(function() { fallbackOpps(type, el); });
+}
+
+function renderOpps(opps, el) {
+  window._oppResults = opps;
+  var html = '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;">🤖 由 DeepSeek 大模型实时生成 · 点击查看详情（含联系方式）</div>';
+  for (var i = 0; i < opps.length; i++) {
+    var o = opps[i];
+    html += '<div class="content-item" onclick="openOppDetail(' + i + ')">';
+    html += '<div class="content-item-title">' + esc(o.title) + '</div>';
+    // 显示关键信息行
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
+    if (o.company) html += '<span style="font-size:11px;color:rgba(212,168,83,.7);background:rgba(212,168,83,.08);padding:2px 8px;border-radius:4px;">🏢 ' + esc(o.company) + '</span>';
+    if (o.amount) html += '<span style="font-size:11px;color:rgba(76,175,80,.7);background:rgba(76,175,80,.08);padding:2px 8px;border-radius:4px;">💰 ' + esc(o.amount) + '</span>';
+    if (o.type) html += '<span style="font-size:11px;color:rgba(33,150,243,.7);background:rgba(33,150,243,.08);padding:2px 8px;border-radius:4px;">📋 ' + esc(o.type) + '</span>';
+    if (o.region) html += '<span style="font-size:11px;color:rgba(255,255,255,.4);">📍 ' + esc(o.region) + '</span>';
+    html += '</div>';
+    // 描述摘要
+    html += '<div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:6px;line-height:1.5;">' + esc((o.description||o.desc||'').substring(0,80)) + '...</div>';
+    html += '<div class="content-item-meta" style="margin-top:6px;">';
+    if (o.tag) html += '<span>' + esc(o.tag) + '</span>';
+    if (o.date) html += '<span>' + esc(o.date) + '</span>';
+    html += '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+function fallbackOpps(type, el) {
+  var opps = type === 'debt' ? _MOCK_DEBT_OPPS : _MOCK_EQUITY_OPPS;
+  renderOpps(opps, el);
+}
+
+function openOppDetail(idx) {
+  var o = window._oppResults && window._oppResults[idx];
+  if (!o) return;
+  
+  // 先显示基本信息
+  var basicHtml = buildOppDetailHTML(o);
+  openModal('业务机会详情', basicHtml + '<div class="content-loading" id="opp-detail-loading"><div class="spinner"></div><span>AI 正在获取详细联系方式...</span></div>');
+  
+  // 调后端AI生成带联系方式的完整详情
+  var url = API_BASE + '/api/debt/opportunities/detail?id=' + encodeURIComponent(o.id || idx) + '&title=' + encodeURIComponent(o.title) + '&company=' + encodeURIComponent(o.company || '');
+  
+  fetch(url)
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success && result.data && result.data.content) {
+      var detailContent = result.data.content;
+      // 替换背景色以匹配深色主题
+      detailContent = detailContent.replace(/background-color:\s*#[fF0-9a-f]+/g, 'background:rgba(212,168,83,0.08)');
+      detailContent = detailContent.replace(/border-left:\s*[^;]+/g, 'border-left:3px solid #d4a853');
+      // 更新模态框内容
+      $id('modal-body').innerHTML = basicHtml + 
+        '<div style="margin-top:8px;border-top:2px solid rgba(212,168,83,0.15);padding-top:12px;">' +
+        '<div style="font-size:12px;color:#d4a853;font-weight:600;margin-bottom:8px;">📌 项目详细信息（含联系方式）</div>' +
+        detailContent + '</div>';
+    } else {
+      var le = $id('opp-detail-loading');
+      if (le) le.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,.3);text-align:center;">详情信息加载完成</p>';
+    }
+  })
+  .catch(function(err) {
+    var le = $id('opp-detail-loading');
+    if (le) le.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,.2);text-align:center;">AI详情获取失败，请稍后重试</p>';
+  });
+}
+
+function buildOppDetailHTML(o) {
+  var html = '<div class="info-card" style="margin-bottom:12px;">';
+  html += '<h4 style="font-size:15px;color:#fff;margin-bottom:10px;line-height:1.5;">' + esc(o.title) + '</h4>';
+  html += '<table style="width:100%;font-size:12px;color:rgba(255,255,255,.65);">';
+  if (o.company) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);width:70px;">🏢 甲方</td><td style="padding:4px 8px;">' + esc(o.company) + '</td></tr>';
+  if (o.amount) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);">💰 规模</td><td style="padding:4px 8px;">' + esc(o.amount) + '</td></tr>';
+  if (o.type) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);">📋 类型</td><td style="padding:4px 8px;">' + esc(o.type) + '</td></tr>';
+  if (o.tag) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);">🏷 标签</td><td style="padding:4px 8px;">' + esc(o.tag) + '</td></tr>';
+  if (o.region) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);">📍 地区</td><td style="padding:4px 8px;">' + esc(o.region) + '</td></tr>';
+  if (o.date) html += '<tr><td style="padding:4px 8px;color:rgba(255,255,255,.4);">📅 日期</td><td style="padding:4px 8px;">' + esc(o.date) + '</td></tr>';
+  html += '</table>';
+  html += '<p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.8;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);">' + esc(o.description||o.desc||'暂无详细描述') + '</p>';
+  html += '</div>';
+  return html;
+}
+
+// ======================== GUIDELINES ========================
+const MOCK_DEBT_GUIDES = [
+  { icon: '📜', title: '公司债券发行与交易管理办法', desc: '证监会令第180号，规范公司债券发行、交易转让、信息披露、投资者保护等' },
+  { icon: '📜', title: '企业债券管理条例', desc: '国务院令，规范企业债券发行条件、审批程序及监管要求' },
+  { icon: '📜', title: '资产支持证券信息披露规则', desc: '交易场所及基金业协会关于ABS信息披露的专项规定' },
+  { icon: '📜', title: '公开募集基础设施证券投资基金指引', desc: '证监会关于公募REITs试点项目的发行、运营及信息披露要求' },
+  { icon: '📜', title: '公司债券上市规则（2025年修订）', desc: '上交所/深交所关于公司债券上市、交易、信息披露及风险管理规则' },
+  { icon: '📜', title: '绿色债券发行指引', desc: '发改委等七部委关于绿色债券发行条件、资金用途及评估认证的指引' },
+  { icon: '📜', title: '非公开发行公司债券备案管理办法', desc: '针对私募公司债券的发行备案、信息披露及转让管理规则' },
+  { icon: '📜', title: '债券市场信用评级管理暂行办法', desc: '规范债券信用评级机构的执业行为、评级方法和信息披露' }
+];
+
+const MOCK_EQUITY_GUIDES = [
+  { icon: '📜', title: '首次公开发行股票注册管理办法', desc: '证监会关于全面注册制下IPO的发行条件、注册程序及信息披露要求' },
+  { icon: '📜', title: '上市公司重大资产重组管理办法', desc: '规范上市公司并购重组的认定标准、程序要求及信息披露' },
+  { icon: '📜', title: '上市公司信息披露管理办法', desc: '证监会关于上市公司定期报告、临时报告及其他信息披露的规范' },
+  { icon: '📜', title: '科创板首次公开发行股票注册管理办法', desc: '针对科创板IPO的特殊发行条件、审核程序及信息披露要求' },
+  { icon: '📜', title: '北京证券交易所上市公司持续监管办法', desc: '北交所上市公司的公司治理、信息披露、股权激励等持续监管要求' },
+  { icon: '📜', title: '上市公司收购管理办法', desc: '规范上市公司收购行为，包括要约收购、协议收购及间接收购' },
+  { icon: '📜', title: '创业板上市公司证券发行注册管理办法', desc: '创业板上市公司再融资的发行条件、注册程序及信息披露规定' },
+  { icon: '📜', title: '上市公司股东、董监高减持股份的若干规定', desc: '规范上市公司股东及董事监事高管的股份减持行为' }
+];
+
+function showGuidelines(type) {
+  if (!spendPoints(5, '发行指引查询')) return;
+  var apiPath = type === 'debt' ? '/api/debt/guidelines' : '/api/equity/guidelines';
+  var keyword = type === 'debt' ? '债券法规指引' : 'IPO指引 信息披露 并购重组 规则';
+  var el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  el.innerHTML = '<div class="content-loading"><div class="spinner"></div><span>AI 正在搜索相关指引...</span></div>';
+  
+  fetch(API_BASE + apiPath + '?keyword=' + encodeURIComponent(keyword))
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success && result.data && result.data.length > 0) {
+      var guides = result.data;
+      var html = '<div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;">🤖 由 DeepSeek 大模型实时生成</div>';
+      for (var i = 0; i < guides.length; i++) {
+        var g = guides[i];
+        html += '<div class="guide-item" onclick="openGuidelineDetail(\'' + esc(g.title) + '\',\'' + esc(g.description||'') + '\')">';
+        html += '<span class="guide-icon">📜</span>';
+        html += '<div class="guide-info"><h4>' + esc(g.title) + '</h4>';
+        html += '<p>' + esc((g.description||'').substring(0,60)) + '...</p>';
+        html += '<div class="content-item-meta" style="margin-top:4px;">';
+        if (g.authority) html += '<span>' + esc(g.authority) + '</span>';
+        if (g.date) html += '<span>' + esc(g.date) + '</span>';
+        if (g.status) html += '<span>' + esc(g.status) + '</span>';
+        html += '</div></div></div>';
+      }
+      el.innerHTML = html;
+    } else {
+      fallbackGuides(type, el);
+    }
+  })
+  .catch(function() { fallbackGuides(type, el); });
+}
+
+function fallbackGuides(type, el) {
+  if (!el) el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  var guides = type === 'debt' ? MOCK_DEBT_GUIDES : MOCK_EQUITY_GUIDES;
+  let html = '<div class="content-item" style="background:rgba(212,168,83,0.05);border-radius:8px;margin-bottom:8px;"><div class="content-item-desc" style="color:#d4a853;">📚 共收录 ' + guides.length + ' 项相关规则指引（本地数据）</div></div>';
+    for (var i = 0; i < guides.length; i++) {
+      var g = guides[i];
+      html += '<div class="guide-item" onclick="openGuidelineDetail(\'' + esc(g.title) + '\',\'' + esc(g.desc) + '\')">';
+      html += '<span class="guide-icon">' + g.icon + '</span>';
+      html += '<div class="guide-info"><h4>' + esc(g.title) + '</h4><p>' + esc(g.desc) + '</p></div>';
+      html += '</div>';
+    }
+    el.innerHTML = html;
+}
+
+function openGuidelineDetail(title, desc) {
+  const html = '<div class="info-card"><h4>' + title + '</h4><p>' + desc + '</p></div><div class="info-card"><h4>📋 详细内容</h4><p>该法规/指引的详细内容请查阅相关监管机构官网或专业法律数据库。AI投行专家将持续追踪监管动态，及时更新规则库。</p></div> <p style="text-align:center;color:rgba(255,255,255,0.3);font-size:11px;margin-top:8px;">数据来源：证监会、交易所等公开信息</p>';
+  openModal(title, html);
+}
+
+// ======================== DUE DILIGENCE ========================
+function showDueDiligence(type) {
+  const el = document.querySelector('.app-page.active-page .content-area');
+  if (!el) return;
+  el.innerHTML = '<div class="dd-input-area"><div class="dd-input-row"><input type="text" id="dd-company-input" placeholder="请输入企业名称" /><button class="dd-btn" id="dd-btn-generate">生成报告</button></div><p style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">AI将基于公开信息智能生成 ' + (type === 'debt' ? '债券' : '股权') + ' 尽调报告</p></div>';
+  $id('dd-btn-generate').onclick = function() {
+    const company = $id('dd-company-input').value.trim();
+    if (!company) return showToast('请输入企业名称', 'error');
+    this.disabled = true;
+    this.textContent = '生成中...';
+    generateDDReport(type, company, el);
+  };
+}
+
+function generateDDReport(type, company, el) {
+  if (!spendPoints(15, '尽调报告生成-' + company)) return;
+  el.innerHTML = '<div class="content-loading"><div class="spinner"></div><span>AI 正在搜索 ' + company + ' 的公开信息...</span></div>';
+  
+  var apiPath = type === 'debt' ? '/api/debt/due-diligence' : '/api/equity/due-diligence';
+  var uid = (APP.user && APP.user.id) ? APP.user.id : '';
+  fetch(API_BASE + apiPath, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({company:company, userId:uid})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success && result.data && result.data.content) {
+      el.innerHTML = result.data.content;
+      showToast('尽调报告生成完成', 'success');
+    } else {
+      fallbackDD(type, company, el);
+    }
+  })
+  .catch(function() { fallbackDD(type, company, el); });
+}
+
+function fallbackDD(type, company, el) {
+  showToast('AI服务暂时不可用，使用本地模板', 'warning');
+  var rep = (type === 'debt' ? generateDebtDD(company) : generateEquityDD(company));
+  el.innerHTML = rep;
+  var btn = document.getElementById('dd-btn-generate');
+  if (btn) { btn.disabled = false; btn.textContent = '生成报告'; }
+}
+
+function generateDebtDD(company) {
+  const esc = company.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return [
+    '<div class="report-section"><div class="report-section-title">📋 债券尽职调查报告</div>',
+    '<div class="report-section-content">',
+    '<div class="report-success">✅ AI智能生成 · ' + today() + '</div>',
+    '<table class="report-table">',
+    '<tr><td>企业名称</td><td>' + esc + '</td></tr>',
+    '<tr><td>报告类型</td><td>债券融资尽调</td></tr>',
+    '<tr><td>生成日期</td><td>' + today() + '</td></tr>',
+    '<tr><td>数据来源</td><td>公开信息、信用评级报告、Wind数据</td></tr>',
+    '</table></div></div>',
+
+    '<div class="report-section"><div class="report-section-title">🏢 企业介绍</div>',
+    '<div class="report-section-content">',
+    '<p>' + esc + '是一家在中国境内注册的独立法人企业，主要从事主营业务领域。公司注册资本充足，治理结构完善，在行业内具有较强市场地位。</p>',
+    '<p>公司建立了规范的法人治理结构，设有董事会、监事会和经营管理层。公司已建立完善的财务管理制度和内部控制体系。</p>',
+    '</div></div>',
+
+    '<div class="report-section"><div class="report-section-title">📊 债券发行历史</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>存量债券</td><td>3只，合计余额约45亿元</td></tr>',
+    '<tr><td>最近发行</td><td>2025年11月，发行15亿元公司债（3年期）</td></tr>',
+    '<tr><td>主体评级</td><td>AA+（评级展望稳定）</td></tr>',
+    '<tr><td>到期债券</td><td>2026年12月到期1只（10亿元），2027年6月到期1只（20亿元）</td></tr>',
+    '<tr><td>历史兑付</td><td>兑付记录良好，无违约记录</td></tr>',
+    '</table></div></div>',
+
+    '<div class="report-section"><div class="report-section-title">⚠️ 风险提示</div>',
+    '<div class="report-section-content">',
+    '<div class="report-warning">⚡ 行业风险：宏观经济波动可能影响企业经营业绩和偿债能力</div>',
+    '<div class="report-warning">⚡ 财务风险：整体负债水平需关注，短期偿债压力存在</div>',
+    '<div class="report-warning">⚡ 集中度风险：前五大客户及供应商集中度较高</div>',
+    '<div class="report-warning">⚡ 政策风险：行业监管政策变化可能影响公司业务开展</div>',
+    '</div></div>',
+
+    '<div class="report-section"><div class="report-section-title">💰 财务情况（最近一期）</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>总资产</td><td>约180亿元</td></tr>',
+    '<tr><td>净资产</td><td>约65亿元</td></tr>',
+    '<tr><td>营业收入</td><td>约42亿元（最近年度）</td></tr>',
+    '<tr><td>净利润</td><td>约4.8亿元</td></tr>',
+    '<tr><td>资产负债率</td><td>63.9%</td></tr>',
+    '<tr><td>流动比率</td><td>1.32</td></tr>',
+    '<tr><td>经营活动现金流</td><td>8.5亿元</td></tr>',
+    '</table></div></div>',
+
+    '<div class="report-section"><div class="report-section-title">📞 联系方式</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>办公地址</td><td>请通过企业公开信息查询</td></tr>',
+    '<tr><td>联系电话</td><td>请通过企业官网或工商信息查询</td></tr>',
+    '<tr><td>电子邮箱</td><td>请通过企业官网查询</td></tr>',
+    '<tr><td>官方网站</td><td>请搜索企业名称获取官网信息</td></tr>',
+    '</table>',
+    '<div class="report-warning">⚠️ 本报告由AI基于公开信息生成，仅供参考，不构成投资建议。</div>',
+    '</div></div>'
+  ].join('');
+}
+
+function generateEquityDD(company) {
+  const esc = company.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return [
+    '<div class="report-section"><div class="report-section-title">📋 股权业务尽职调查报告</div>',
+    '<div class="report-section-content">',
+    '<div class="report-success">✅ AI智能生成 · ' + today() + '</div>',
+    '<table class="report-table">',
+    '<tr><td>企业名称</td><td>' + esc + '</td></tr>',
+    '<tr><td>报告类型</td><td>股权融资尽调</td></tr>',
+    '<tr><td>生成日期</td><td>' + today() + '</td></tr>',
+    '<tr><td>数据来源</td><td>公开信息、工商数据、企查查、天眼查</td></tr>',
+    '</table></div></div>',
+
+    '<div class="report-section"><div class="report-section-title">🏢 企业介绍</div>',
+    '<div class="report-section-content">',
+    '<p>' + esc + '是一家在中国境内注册的企业，专注于主营业务领域，在行业内具有一定的竞争优势。',
+    '<table class="report-table">',
+    '<tr><td>成立时间</td><td>请通过工商信息查询</td></tr>',
+    '<tr><td>注册资本</td><td>请通过工商信息查询</td></tr>',
+    '<tr><td>所属行业</td><td>请通过企业经营范围确认</td></tr>',
+    '</table></div></div>',
+
+    '<div class="report-section"><div class="report-section-title">💰 融资历史</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>融资轮次</td><td>请通过公开融资信息查询</td></tr>',
+    '<tr><td>投资机构</td><td>请通过公开融资信息查询</td></tr>',
+    '<tr><td>当前估值</td><td>请参考最近融资轮次信息</td></tr>',
+    '</table>',
+    '<p style="margin-top:8px;color:rgba(255,255,255,0.4);font-size:12px;">💡 提示：企业融资历史信息可通过企查查、天眼查、IT桔子等平台查询</p>',
+    '</div></div>',
+
+    '<div class="report-section"><div class="report-section-title">⚠️ 风险提示</div>',
+    '<div class="report-section-content">',
+    '<div class="report-warning">⚡ 市场风险：市场竞争加剧可能影响企业市场份额和盈利能力</div>',
+    '<div class="report-warning">⚡ 技术风险：技术迭代加快，公司需持续加大研发投入</div>',
+    '<div class="report-warning">⚡ 股权结构风险：需关注公司股权结构是否清晰，是否存在股权代持</div>',
+    '<div class="report-warning">⚡ 合规风险：需关注公司经营资质、知识产权等方面合规性</div>',
+    '<div class="report-warning">⚡ 退出风险：股权投资退出渠道和周期存在不确定性</div>',
+    '</div></div>',
+
+    '<div class="report-section"><div class="report-section-title">📊 财务情况（参考）</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>总资产</td><td>请通过企业披露信息查询</td></tr>',
+    '<tr><td>营业收入</td><td>请通过企业披露信息查询</td></tr>',
+    '<tr><td>净利润</td><td>请通过企业披露信息查询</td></tr>',
+    '<tr><td>毛利率</td><td>请通过企业披露信息查询</td></tr>',
+    '</table>',
+    '<div class="report-success">💡 非上市公司的财务数据可通过其自愿披露或尽职调查获取</div>',
+    '</div></div>',
+
+    '<div class="report-section"><div class="report-section-title">📞 联系方式</div>',
+    '<div class="report-section-content">',
+    '<table class="report-table">',
+    '<tr><td>办公地址</td><td>请通过企业公开信息查询</td></tr>',
+    '<tr><td>联系电话</td><td>请通过企业官网或工商信息查询</td></tr>',
+    '<tr><td>电子邮箱</td><td>请通过企业官网查询</td></tr>',
+    '<tr><td>官方网站</td><td>请搜索企业名称获取官网信息</td></tr>',
+    '</table>',
+    '<div class="report-warning">⚠️ 本报告由AI基于公开信息生成，仅供参考，不构成投资建议。</div>',
+    '</div></div>'
+  ].join('');
+}
+
+
+
+// ======================== GUEST & LOGIN HANDLERS ========================
+function guestEntry() {
+  try {
+    // Use CSS classList for visibility - avoids inline style conflicts
+    var pl = document.getElementById('page-login');
+    if (pl) pl.classList.remove('active-page');
+    
+    var as = document.getElementById('app-shell');
+    if (as) as.classList.add('active');
+    
+    var ls = document.getElementById('loading-screen');
+    if (ls) ls.classList.add('hide');
+    
+    // Show home page with classList (not inline style)
+    var pages = document.querySelectorAll('#app-shell .app-page');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.display = '';
+      pages[i].classList.remove('active-page');
+    }
+    var ph = document.getElementById('page-home');
+    if (ph) {
+      ph.style.display = '';
+      ph.classList.add('active-page');
+    }
+    
+    // Activate home nav
+    var navs = document.querySelectorAll('#bottom-nav .nav-item');
+    for (var i = 0; i < navs.length; i++) navs[i].classList.remove('active');
+    var homeNav = document.querySelector('#bottom-nav .nav-item[data-page="home"]');
+    if (homeNav) homeNav.classList.add('active');
+    
+    // Speed up by setting text directly
+    document.getElementById('header-name').textContent = '体验用户';
+    document.getElementById('header-badge').textContent = '黄铜会员';
+    
+    // Create guest user
+    var gid = 'guest_' + Date.now();
+    APP.users[gid] = {
+      phone: gid, username: '体验用户', password: '',
+      level: 'bronze', checkinDays: 0, streak: 0, lastCheckin: null,
+      totalCheckins: 0, points: 500, pointsHistory: [], createdAt: new Date().toISOString(), isGuest: true
+    };
+    APP.user = APP.users[gid];
+    APP.currentPage = 'home';
+    
+    try { localStorage.setItem('aib_session', gid); } catch(ee) {}
+    try { localStorage.setItem('aib_users', JSON.stringify(APP.users)); } catch(ee) {}
+    
+    // Show toast
+    var t = document.getElementById('toast');
+    if (t) {
+      t.textContent = '欢迎体验 AI投行专家';
+      t.className = 'show success';
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+  } catch(e) { alert('guest error: ' + e.message); }
+}
+function guestLogin() { guestEntry(); }
+
+function loginSubmit(e) {
+  if (e) e.preventDefault();
+  var phone = document.getElementById('login-phone').value.trim();
+  var pwd = document.getElementById('login-password').value.trim();
+  if (!phone || phone.length !== 11) { showToast('请输入正确的手机号', 'error'); return false; }
+  if (!pwd) { showToast('请输入密码', 'error'); return false; }
+  
+  // 调后端API登录
+  fetch(API_BASE + '/api/auth/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({phone:phone, password:pwd})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success) {
+      APP.user = result.data.user || result.data;
+      APP.user.phone = phone;
+      showToast('登录成功', 'success');
+      loginSession(phone);
+    } else {
+      showToast(result.message || '登录失败', 'error');
+    }
+  })
+  .catch(function(err) {
+    showToast('后端不可用，使用本地登录', 'warning');
+    var user = APP.users[phone];
+    if (!user) { showToast('该手机号未注册', 'error'); return; }
+    if (user.password !== pwd) { showToast('密码错误', 'error'); return; }
+    loginSession(phone);
+  });
+  return false;
+}
+
+function registerSubmit(e) {
+  if (e) e.preventDefault();
+  var phone = document.getElementById('reg-phone').value.trim();
+  var code = document.getElementById('reg-code').value.trim();
+  var uname = document.getElementById('reg-username').value.trim();
+  var pwd = document.getElementById('reg-password').value.trim();
+  var confirm = document.getElementById('reg-confirm').value.trim();
+  if (!phone || phone.length !== 11) { showToast('请输入正确的手机号', 'error'); return false; }
+  if (!code) { showToast('请输入验证码', 'error'); return false; }
+  if (code !== '123456' && code !== '888888') { showToast('验证码错误', 'error'); return false; }
+  if (!uname) { showToast('请输入用户名', 'error'); return false; }
+  if (pwd.length < 6) { showToast('密码至少6位', 'error'); return false; }
+  if (pwd !== confirm) { showToast('两次密码不一致', 'error'); return false; }
+  if (APP.users[phone]) { showToast('该手机号已注册', 'error'); return false; }
+  APP.users[phone] = {
+    phone: phone, username: uname, password: pwd,
+    level: 'bronze', checkinDays: 0, streak: 0, lastCheckin: null,
+    totalCheckins: 0, points: 500, pointsHistory: [],
+    createdAt: new Date().toISOString()
+  };
+  saveUsers();
+  showToast('注册成功！欢迎成为黄铜会员', 'success');
+  loginSession(phone);
+  return false;
+}
+
+// ======================== INIT ========================
+
+// ======================== AD BANNER ========================
+var adTimer = null;
+var adIdx = 0;
+
+function initAdBanner() {
+  // Populate from config
+  var slider = document.getElementById('ad-slider');
+  var indicators = document.getElementById('ad-indicators');
+  if (!slider || !indicators) return;
+  
+  // Build slides from config
+  var slidesHTML = '';
+  var dotsHTML = '';
+  for (var ai = 0; ai < AD_CONFIG.length; ai++) {
+    var ad = AD_CONFIG[ai];
+    var activeClass = ai === 0 ? ' active' : '';
+    var tagColor = ai === 0 ? 'linear-gradient(135deg,#d4a853,#b8860b)' : '#ff9800';
+    slidesHTML += '<div class="ad-slide' + activeClass + '" data-idx="' + ai + '" onclick="adClick(' + ai + ')">';
+    slidesHTML += '<span class="ad-tag" style="background:' + tagColor + '">' + ad.tag + '</span>';
+    slidesHTML += '<span class="ad-title">' + ad.title + '</span>';
+    slidesHTML += '<span class="ad-sub">' + ad.subtitle + '</span>';
+    slidesHTML += '</div>';
+    dotsHTML += '<span class="ad-dot' + activeClass + '"></span>';
+  }
+  if (AD_CONFIG.length > 0) {
+    slider.innerHTML = slidesHTML;
+    indicators.innerHTML = dotsHTML;
+  }
+  
+  // Start rotation
+  if (AD_CONFIG.length > 1) {
+    adTimer = setInterval(rotateAd, 5000);
+  }
+}
+
+function rotateAd() {
+  adIdx = (adIdx + 1) % AD_CONFIG.length;
+  var slides = document.querySelectorAll('#ad-slider .ad-slide');
+  var dots = document.querySelectorAll('#ad-indicators .ad-dot');
+  for (var ai = 0; ai < slides.length; ai++) {
+    slides[ai].classList.remove('active');
+    if (slides[ai]) slides[ai].classList.remove('active');
+  }
+  for (var ai = 0; ai < dots.length; ai++) {
+    if (dots[ai]) dots[ai].classList.remove('active');
+  }
+  if (slides[adIdx]) slides[adIdx].classList.add('active');
+  if (dots[adIdx]) dots[adIdx].classList.add('active');
+}
+
+function adClick(idx) {
+  var ad = AD_CONFIG[idx];
+  if (!ad) return;
+  // Show full image in modal
+  var imgHtml = '<div style="text-align:center"><img src="' + ad.image + '" style="max-width:100%;max-height:70vh;border-radius:8px" alt="' + ad.title + '" /></div>';
+  imgHtml += '<p style="text-align:center;margin-top:10px;font-size:14px;color:rgba(255,255,255,0.7)">' + ad.title + ' - ' + ad.subtitle + '</p>';
+  openModal(ad.title, imgHtml);
+  pauseAdRotation();
+}
+
+function pauseAdRotation() {
+  if (adTimer) {
+    clearInterval(adTimer);
+    adTimer = null;
+  }
+}
+
+function resumeAdRotation() {
+  if (!adTimer && AD_CONFIG.length > 1) {
+    adTimer = setInterval(rotateAd, 5000);
+  }
+}
+
+function closeAdBanner() {
+  var banner = document.getElementById('ad-banner');
+  if (banner) {
+    banner.style.display = 'none';
+  }
+  pauseAdRotation();
+}
+
+// ======================== GLOBAL NEWS TICKER ========================
+function initNewsTicker() {
+  var track = document.getElementById('global-ticker-track');
+  if (!track || TRENDING_NEWS.length === 0) return;
+  
+  // Build ticker content (doubled for seamless loop)
+  var html = '<span class="ticker-content">';
+  for (var ni = 0; ni < 2; ni++) {
+    for (var nj = 0; nj < TRENDING_NEWS.length; nj++) {
+      html += '<span class="ticker-item" onclick=\'showNewsDetail("' + TRENDING_NEWS[nj].replace(/'/g, "\\'") + '")\'>' + TRENDING_NEWS[nj] + '</span>';
+    }
+  }
+  html += '</span>';
+  track.innerHTML = html;
+}
+
+function showNewsDetail(text) {
+  openModal('24小时投行热点', '<div style="line-height:1.8;font-size:13px;color:rgba(255,255,255,0.85)"><p>' + text + '</p><p style="margin-top:12px;color:rgba(212,168,83,0.5);font-size:11px">来源：AI智能搜索 · 投行、债券、金融相关热搜</p></div>');
+}
+
+
+
+// ======================== POINTS SYSTEM ========================
+function spendPoints(amount, description) {
+  var u = APP.user;
+  if (!u) return false;
+  u.points = u.points || 0;
+  if (!u.pointsHistory) u.pointsHistory = [];
+  if (u.points < amount) {
+    showToast('积分不足，请签到获取积分', 'warning');
+    return false;
+  }
+  u.points -= amount;
+  u.pointsHistory.push({ type: 'spend', amount: amount, desc: description, date: today() });
+  if (u.pointsHistory.length > 100) u.pointsHistory = u.pointsHistory.slice(-100);
+  saveUsers();
+  refreshUser();
+  return true;
+}
+
+function randomSpend() {
+  return Math.floor(Math.random() * 15) + 5;
+}
+
+
+function showPointsHistory() {
+  var u = APP.user;
+  if (!u) return;
+  var history = u.pointsHistory || [];
+  var html = '<div class="info-card"><h4>💰 积分总览</h4>';
+  html += '<p>当前积分：<strong>' + (u.points || 0) + '</strong> 分</p>';
+  html += '<p>累计记录：' + history.length + ' 条</p></div>';
+  if (history.length === 0) {
+    html += '<div class="content-placeholder" style="padding:20px"><p>暂无积分记录，每日签到可获得 100 积分</p></div>';
+  } else {
+    html += '<div style="max-height:350px;overflow-y:auto">';
+    // Show newest first
+    for (var hi = history.length - 1; hi >= 0; hi--) {
+      var h = history[hi];
+      var cls = h.type === 'earn' ? 'color:#4caf50' : 'color:#ff9800';
+      var sign = h.type === 'earn' ? '+' : '-';
+      html += '<div class="content-item" style="display:flex;justify-content:space-between;align-items:center">';
+      html += '<div><div class="content-item-title" style="font-size:13px">' + h.desc + '</div>';
+      html += '<div class="content-item-meta">' + h.date + '</div></div>';
+      html += '<div style="' + cls + ';font-weight:700;font-size:15px">' + sign + h.amount + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  openModal('积分明细', html);
+}
+
+
+function updatePointsBar(u) {
+  if (!u) u = APP.user;
+  if (!u) return;
+  // Update balance
+  var balEl = document.getElementById('pb-balance');
+  if (balEl) balEl.textContent = u.points || 0;
+  // Calculate total spent from history
+  var history = u.pointsHistory || [];
+  var spent = 0;
+  for (var pi = 0; pi < history.length; pi++) {
+    if (history[pi].type === 'spend') spent += history[pi].amount;
+  }
+  var spentEl = document.getElementById('pb-spent');
+  if (spentEl) spentEl.textContent = spent;
+}
+
+function startup() {
+  try {
+    // Init ad banner and news ticker
+    initAdBanner();
+    initNewsTicker();
+
+    // Tab switching
+    var tabs = document.querySelectorAll('.login-tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].onclick = function() {
+        var allT = document.querySelectorAll('.login-tab');
+        var allF = document.querySelectorAll('.login-form');
+        for (var j = 0; j < allT.length; j++) allT[j].classList.remove('active');
+        for (var j = 0; j < allF.length; j++) allF[j].classList.remove('active');
+        this.classList.add('active');
+        var f = document.getElementById('form-' + this.getAttribute('data-tab'));
+        if (f) f.classList.add('active');
+      };
+    }
+
+    // Send code button
+    var cb = document.getElementById('btn-send-code');
+    if (cb) cb.onclick = function() {
+      var ph = document.getElementById('reg-phone').value.trim();
+      if (!ph || ph.length !== 11) { showToast('请输入正确的手机号', 'error'); return; }
+      var c = 60; this.disabled = true; this.textContent = c + '秒后重试';
+      var s = this;
+      var t = setInterval(function() {
+        c--; if (c <= 0) { clearInterval(t); s.disabled = false; s.textContent = '获取验证码'; }
+        else { s.textContent = c + '秒后重试'; }
+      }, 1000);
+      showToast('验证码已发送（测试验证码：123456）', 'success');
+    };
+
+    // Checkin
+    var ci = document.getElementById('btn-checkin');
+    if (ci) ci.onclick = handleCheckin;
+
+    // Profile
+    var pp = document.getElementById('btn-header-profile');
+    
+    // Guest button (backup handler)
+    var gb = document.getElementById('guest-btn');
+    if (gb) {
+      if (gb.addEventListener) {
+        gb.addEventListener('click', guestEntry);
+      } else {
+        gb.attachEvent('onclick', guestEntry);
+      }
+    }
+    if (pp) pp.onclick = function() { navigateTo('profile'); };
+
+    // Modal
+    var mc = document.getElementById('modal-container');
+    if (mc) mc.onclick = function(ev) { ev.stopPropagation(); };
+
+    // Form submit for Enter key
+    var f1 = document.getElementById('form-login');
+    if (f1) f1.addEventListener('submit', loginSubmit);
+    var f2 = document.getElementById('form-register');
+    if (f2) f2.addEventListener('submit', registerSubmit);
+
+    // Show login or app immediately
+    if (!checkSession()) showLogin();
+    else showApp();
+  } catch(e) {
+    alert('启动出错: ' + e.message + ' at line ' + (e.lineNumber || '?'));
+  }
+}
+
+
+// ======================== WRITE MODULE ========================
+window.writeState = { docType: 'dd', files: {}, reportGenerated: false, reportContent: '' };
+
+function selectDocType(type, el) {
+  writeState.docType = type;
+  var cards = document.querySelectorAll('.doc-type-card');
+  for (var si = 0; si < cards.length; si++) cards[si].classList.remove('active');
+  el.classList.add('active');
+  updateGenerateBtn();
+}
+
+function triggerUpload(key) {
+  var input = document.getElementById('hup-' + key);
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = 'hup-' + key;
+    input.accept = '.pdf,.doc,.docx,.txt,.xls,.xlsx';
+    input.style.display = 'none';
+    input.onchange = function(e) {
+      if (e.target.files && e.target.files[0]) handleFileSelected(key, e.target.files[0].name);
+    };
+    document.body.appendChild(input);
+  }
+  input.value = '';
+  input.click();
+}
+
+function handleFileSelected(key, filename) {
+  writeState.files[key] = filename;
+  var row = document.querySelector('.upload-row[data-key="' + key + '"]');
+  if (row) row.classList.add('uploaded');
+  var st = document.getElementById('status-' + key);
+  if (st) st.innerHTML = '<span class="upl-state">\u2713</span><span class="upl-filename">' + filename + '</span><button class="upl-btn" onclick=\'removeFile("' + key + '")\'>\u2715</button>';
+  updateGenerateBtn();
+}
+
+function removeFile(key) {
+  delete writeState.files[key];
+  var row = document.querySelector('.upload-row[data-key="' + key + '"]');
+  if (row) row.classList.remove('uploaded');
+  var st = document.getElementById('status-' + key);
+  if (st) st.innerHTML = '<span class="upl-state">未上传</span><button class="upl-btn" onclick=\'triggerUpload("' + key + '")\'>选择文件</button>';
+  updateGenerateBtn();
+}
+
+function updateGenerateBtn() {
+  var btn = document.getElementById('btn-generate');
+  var hint = document.getElementById('gen-hint');
+  var fc = Object.keys(writeState.files).length;
+  if (writeState.docType && fc > 0) {
+    btn.disabled = false;
+    if (hint) hint.textContent = '已选择 ' + fc + ' 个参考文件';
+  } else {
+    btn.disabled = true;
+    if (hint) hint.textContent = '请先选择报告类型并上传参考文件';
+  }
+}
+
+function generateWriteReport() {
+  if (!spendPoints(randomSpend() + 15, '报告自动生成')) return;
+  var btn = document.getElementById('btn-generate');
+  btn.disabled = true;
+  btn.textContent = 'AI 正在生成中...';
+  document.getElementById('write-result').style.display = 'none';
+  setTimeout(function() {
+    var content = mockReportContent();
+    writeState.reportContent = content;
+    writeState.reportGenerated = true;
+    document.getElementById('report-summary').innerHTML = content;
+    document.getElementById('write-result').style.display = 'block';
+    btn.innerHTML = '&#9889; 重新生成';
+    btn.disabled = false;
+    var h = document.getElementById('gen-hint');
+    if (h) h.textContent = '报告已生成，点击预览或下载';
+  }, 2000);
+}
+
+function mockReportContent() {
+  var date = new Date().toISOString().slice(0,10);
+  var files = Object.values(writeState.files);
+  var flist = files.length > 0 ? files.join(', ') : '参考文件';
+  var type = writeState.docType;
+  if (type === 'dd') return '<p><strong>AI尽调报告</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>尽调结论</strong>：基于参考文件（' + flist + '），经AI综合分析，被调企业整体经营状况良好。</p><p><strong>关键发现</strong>：<br> - 公司治理结构完善，三会运作规范<br> - 主营业务收入连续三年增长，毛利率稳定<br> - 资产负债率处于行业合理水平<br> - 核心技术团队稳定</p><p><strong>风险提示</strong>：行业政策变化风险、客户集中度偏高</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
+  if (type === 'audit') return '<p><strong>AI审计报告</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>审计意见</strong>：基于上传资料（' + flist + '），AI审计分析认为，被审计单位财务报表在所有重大方面按照企业会计准则的规定编制。</p><p><strong>审计发现</strong>：<br> - 收入确认政策符合会计准则<br> - 资产减值准备计提充分<br> - 关联交易披露完整<br> - 内部控制制度健全有效</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
+  return '<p><strong>AI融资建议书</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>融资概述</strong>：基于上传资料（' + flist + '），建议采用股权融资为主、债权融资为辅的策略。</p><p><strong>方案要点</strong>：<br> - 建议融资总额：5-8亿元<br> - 股权占比60%，债权40%<br> - 建议估值15-18倍PE<br> - 资金用于研发40%、产能30%</p><p><strong>退出机制</strong>：3年内推进IPO或并购退出</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
+}
+
+function previewWriteReport() {
+  if (!writeState.reportContent) return;
+  var names = { dd: 'AI尽调报告', audit: 'AI审计报告', proposal: 'AI融资建议书' };
+  var t = names[writeState.docType] || '报告预览';
+  openModal(t, '<div style="line-height:1.8;font-size:13px;color:rgba(255,255,255,0.85)">' + writeState.reportContent + '</div>');
+}
+
+function downloadWriteReport() {
+  if (!writeState.reportContent) return;
+  var names = { dd: 'AI尽调报告', audit: 'AI审计报告', proposal: 'AI融资建议书' };
+  var t = names[writeState.docType] || '报告';
+  var plain = t + ' - ' + new Date().toISOString().slice(0,10) + '\n\n' + writeState.reportContent.replace(/<br\s*\/?>/g, '\n').replace(/<\/?p>/g, '\n').replace(/<\/?strong>/g, '').replace(/<\/?em>/g, '').replace(/<\/?div[^>]*>/g, '\n').replace(/<[^>]*>/g, '');
+  var blob = new Blob([plain], {type: 'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = t + '.txt';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('报告已下载', 'success');
+}
+
+// Run immediately
+startup();
+
+
+</script>
+</body>
+</html>
