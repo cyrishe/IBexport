@@ -10,7 +10,8 @@
  */
 
 const axios = require('axios');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // ================================================================
 // 1. API 配置
@@ -25,6 +26,7 @@ const apiConfig = {
   // 是否启用流式输出（暂不支持）
   stream: false
 };
+
 
 // ================================================================
 // 2. Prompt 模板仓库
@@ -368,6 +370,7 @@ ${
 </p>`
 };
 
+
 // ================================================================
 // 3. 核心 API 调用
 // ================================================================
@@ -376,7 +379,7 @@ ${
  * 检查 API Key 是否已配置
  */
 function isConfigured() {
-  return apiConfig.apiKey && apiConfig.apiKey !== 'sk-your-deepseek-api-key-here';
+  return !!apiConfig.apiKey && apiConfig.apiKey !== 'sk-your-deepseek-api-key-here';
 }
 
 /**

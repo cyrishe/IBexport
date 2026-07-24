@@ -2,10 +2,12 @@
  * AI投行专家 — API 服务端
  */
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { getDb, migrate } = require('./database');
 const ai = require('./ai');
+const writeReport = require('./write-report');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -13,8 +15,20 @@ const SALT_ROUNDS = 10;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Serve static frontend files (no-cache for development)
+const staticDir = path.join(__dirname, '..');
+app.use(express.static(staticDir, {
+  setHeaders: function(res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
+console.log('Static files served from:', staticDir);
+
 migrate();
-const path = require('path');
+
 // ====================== CACHE ======================
 var resultCache = {};
 var CACHE_TTL = 55 * 60 * 1000;
@@ -275,13 +289,43 @@ app.get('/api/debt/hot-news', async (req, res) => {
 app.get('/api/ai/status', (req, res) => {
   ok(res, { configured: ai.isConfigured(), model: process.env.DEEPSEEK_MODEL || 'deepseek-chat', apiKeySet: !!process.env.DEEPSEEK_API_KEY });
 });
-// ====================== FRONTEND STATIC ======================
-app.use(express.static(path.join(__dirname, '..')));
 
-app.use((req, res) => {
-  if (req.path.startsWith('/api/')) return fail(res, '接口不存在', 404);
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
+// ====================== 撰写模块 API ======================
+app.post('/api/write/generate', async (req, res) => {
+  try {
+    var body = req.body;
+    var company = (body.company || '').trim();
+    var industry = (body.industry || '').trim();
+    var purpose = (body.purpose || '').trim();
+    var files = body.files || {};
+    var fileContents = body.fileContents || {};
+    var extraInfo = body.extraInfo || '';
+    var docType = body.docType || 'dd';
+    
+    if (!company) return fail(res, '请填写尽调企业全称');
+    if (!industry) return fail(res, '请填写企业所属行业');
+    if (!purpose) return fail(res, '请填写尽调目的说明');
+    
+    // File format check (optional - files are no longer mandatory)
+    for (var key in files) {
+      var filename = files[key];
+      if (!filename) continue;
+      var ext = filename.split('.').pop().toLowerCase();
+      if (!['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'].includes(ext)) {
+        return fail(res, '文件 "' + filename + '" 格式不支持，请上传 PDF/DOC/DOCX/XLS/XLSX/TXT 文件');
+      }
+    }
+    
+    console.log('[WRITE] 生成尽调报告:', company);
+    var content = await writeReport.generate({ company, industry, purpose, files, fileContents, extraInfo, docType });
+    console.log('[WRITE] 报告生成完成，长度:', content.length);
+    ok(res, { company, content });
+  } catch (err) {
+    console.error('[WRITE ERROR]', err);
+    fail(res, err.message, 500);
+  }
 });
+
 // ====================== STARTUP ======================
 app.listen(PORT, () => {
   console.log('═══════════════════════════════════════════');

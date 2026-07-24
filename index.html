@@ -400,6 +400,9 @@ a{color:inherit;text-decoration:none}
 }
 .modal-body .info-card h4{font-size:14px;color:#d4a853;margin-bottom:6px}
 .modal-body .info-card p{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
+/* Product feature card hover */
+.prod-feature-card{display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06);transition:all 0.3s ease;cursor:default}
+.prod-feature-card:hover{background:rgba(212,168,83,0.06);border-color:rgba(212,168,83,0.15);transform:translateX(3px)}
 .modal-body .info-list{list-style:none;padding:0}
 .modal-body .info-list li{
   padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
@@ -492,23 +495,188 @@ a{color:inherit;text-decoration:none}
 .btn-action{flex:1;padding:12px;border-radius:8px;font-size:13px;font-weight:600;background:rgba(212,168,83,0.1);color:#d4a853;border:1px solid rgba(212,168,83,0.2);transition:all 0.3s}
 .btn-action:hover{background:rgba(212,168,83,0.2)}
 .report-summary{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px}
+/* Force report content to stay dark theme */
+.report-summary * {background-color:transparent !important}
+.report-summary table {background:rgba(255,255,255,0.03) !important}
+.report-summary table td,.report-summary table th {background:transparent !important;color:rgba(255,255,255,0.8) !important;border-bottom:1px solid rgba(255,255,255,0.06) !important}
+.report-summary h1,.report-summary h2,.report-summary h3,.report-summary h4{color:#d4a853 !important}
+.report-summary p,.report-summary li,.report-summary span{color:rgba(255,255,255,0.75) !important}
+.report-summary .report-section{border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,0.02) !important}
 @media(max-width:400px){.doc-type-grid{grid-template-columns:repeat(2,1fr)}}
 
 
-/* Ad Banner */
-.ad-banner{position:relative;background:linear-gradient(135deg,#1a2d4a,#0d1f3c);border-bottom:1px solid rgba(212,168,83,0.12);padding:10px 20px;cursor:pointer;overflow:hidden;min-height:52px;display:flex;align-items:center}
-.ad-slider{flex:1;display:flex;overflow:hidden;position:relative;height:32px;align-items:center}
-.ad-slide{display:flex;align-items:center;gap:8px;white-space:nowrap;animation:none;position:absolute;left:0;top:50%;transform:translateY(-50%);opacity:0;transition:opacity 0.5s ease;width:100%}
-.ad-slide.active{opacity:1;position:relative;left:auto;top:auto;transform:none}
-.ad-tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;background:linear-gradient(135deg,#d4a853,#b8860b);color:#0a1628;flex-shrink:0}
-.ad-title{font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
-.ad-sub{font-size:11px;color:rgba(212,168,83,0.6);flex-shrink:0;display:none}
-@media(min-width:480px){.ad-sub{display:inline}}
-.ad-indicators{display:flex;gap:4px;margin:0 10px;flex-shrink:0}
-.ad-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s}
-.ad-dot.active{background:#d4a853;width:18px;border-radius:3px}
-.ad-close{font-size:14px;color:rgba(255,255,255,0.3);padding:2px 4px;flex-shrink:0;transition:color 0.3s}
-.ad-close:hover{color:rgba(255,255,255,0.6)}
+/* Ad Banner - Premium Redesign */
+.ad-banner{
+  position:relative;
+  background:linear-gradient(135deg,#0f1f36 0%,#1a2d4a 50%,#0d1f3c 100%);
+  border-bottom:1px solid rgba(212,168,83,0.15);
+  padding:14px 20px;
+  cursor:pointer;
+  overflow:hidden;
+  min-height:82px;
+  display:flex;
+  align-items:center;
+  transition:all 0.3s ease
+}
+.ad-banner::before{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(212,168,83,0.04),transparent);
+  animation:adShine 6s ease-in-out infinite;
+  pointer-events:none
+}
+@keyframes adShine{
+  0%,100%{left:-100%}
+  50%{left:150%}
+}
+.ad-banner-inner{
+  display:flex;
+  align-items:center;
+  width:100%;
+  gap:12px
+}
+.ad-slider{
+  flex:1;
+  display:flex;
+  overflow:hidden;
+  position:relative;
+  height:54px;
+  align-items:center
+}
+.ad-slide{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  opacity:0;
+  transition:opacity 0.5s ease,transform 0.5s ease;
+  width:100%;
+  padding:4px 0;
+  pointer-events:none
+}
+.ad-slide.active{
+  opacity:1;
+  position:relative;
+  left:auto;
+  top:auto;
+  transform:none;
+  pointer-events:auto
+}
+.ad-slide-qr{
+  gap:14px
+}
+.ad-tag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px 10px;
+  border-radius:4px;
+  font-size:10px;
+  font-weight:700;
+  background:linear-gradient(135deg,#d4a853,#b8860b);
+  color:#0a1628;
+  flex-shrink:0;
+  letter-spacing:0.5px;
+  box-shadow:0 2px 8px rgba(212,168,83,0.2)
+}
+.ad-content{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  flex:1;
+  min-width:0
+}
+.ad-title{
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:0.3px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.3)
+}
+.ad-sub{
+  font-size:11px;
+  color:rgba(212,168,83,0.55);
+  letter-spacing:0.3px;
+  display:none
+}
+@media(min-width:480px){
+  .ad-sub{display:block}
+}
+.ad-qr-section{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:1
+}
+.ad-qr-img{
+  width:48px;
+  height:48px;
+  border-radius:6px;
+  border:2px solid rgba(212,168,83,0.2);
+  flex-shrink:0;
+  object-fit:cover;
+  background:rgba(255,255,255,0.05);
+  transition:border-color 0.3s
+}
+.ad-qr-img:hover{
+  border-color:rgba(212,168,83,0.5)
+}
+.ad-qr-text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  flex:1
+}
+.ad-qr-title{
+  font-size:14px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:0.3px
+}
+.ad-qr-sub{
+  font-size:11px;
+  color:#d4a853;
+  letter-spacing:0.5px;
+  opacity:0.7
+}
+.ad-indicators{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+  margin:0 8px
+}
+.ad-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.15);
+  transition:all 0.4s ease
+}
+.ad-dot.active{
+  background:#d4a853;
+  width:24px;
+  border-radius:3px;
+  box-shadow:0 0 8px rgba(212,168,83,0.3)
+}
+.ad-close{
+  font-size:14px;
+  color:rgba(255,255,255,0.25);
+  padding:4px 6px;
+  flex-shrink:0;
+  transition:all 0.3s;
+  border-radius:4px;
+  line-height:1
+}
+.ad-close:hover{
+  color:rgba(255,255,255,0.7);
+  background:rgba(255,255,255,0.05)
+}
 
 /* Global News Ticker */
 .global-ticker{display:flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(212,168,83,0.05);border-bottom:1px solid rgba(212,168,83,0.08);overflow:hidden}
@@ -644,27 +812,46 @@ a{color:inherit;text-decoration:none}
       <span class="pb-label">累计消耗</span>
       <span class="pb-value" id="pb-spent">0</span>
     </span>
+    <button onclick="resetPoints()" style="font-size:9px;color:rgba(255,255,255,0.2);background:none;border:1px solid rgba(255,255,255,0.06);border-radius:2px;padding:0 5px;cursor:pointer;margin-left:8px" title="重置积分为1000">重置</button>
   </div>
 
   <!-- ==================== Ad Banner ==================== -->
   <div class="ad-banner" id="ad-banner">
-    <div class="ad-slider" id="ad-slider">
-      <div class="ad-slide active" data-idx="0">
-        <span class="ad-tag">推荐</span>
-        <span class="ad-title">优智科技智能投顾</span>
-        <span class="ad-sub">AI驱动 · 智能决策 · 专业投顾</span>
+    <div class="ad-banner-inner">
+      <div class="ad-slider" id="ad-slider">
+        <div class="ad-slide active" data-ad-idx="0" onclick="handleAdClick(0)">
+          <span class="ad-tag">推荐</span>
+          <div class="ad-content">
+            <span class="ad-title">优智科技智能投顾</span>
+            <span class="ad-sub">AI驱动 · 智能决策 · 专业投顾</span>
+          </div>
+        </div>
+        <div class="ad-slide" data-ad-idx="1" onclick="handleAdClick(1)">
+          <span class="ad-tag" style="background:linear-gradient(135deg,#ff9800,#e65100)">新品</span>
+          <div class="ad-content">
+            <span class="ad-title">优智华为人工智能一体机</span>
+            <span class="ad-sub">算力赋能 · 智算未来 · 企业首选</span>
+          </div>
+        </div>
+        <div class="ad-slide ad-slide-qr" data-ad-idx="2" onclick="handleAdClick(2)">
+          <span class="ad-tag" style="background:linear-gradient(135deg,#4caf50,#2e7d32)">社群</span>
+          <div class="ad-qr-section">
+            <img class="ad-qr-img" id="ad-qr-img"
+                 src="assets/qrcode.png"
+                 alt="投行交流群二维码">
+            <div class="ad-qr-text">
+              <span class="ad-qr-title">投行业务资源交流群</span>
+              <span class="ad-qr-sub">扫码入群 · 资源对接 · 行业资讯</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="ad-slide" data-idx="1">
-        <span class="ad-tag" style="background:#ff9800">新品</span>
-        <span class="ad-title">优智华为人工智能一体机</span>
-        <span class="ad-sub">算力赋能 · 智算未来 · 企业首选</span>
+      <div class="ad-indicators" id="ad-indicators">
+        <span class="ad-dot active"></span>
+        <span class="ad-dot"></span>
+        <span class="ad-dot"></span>
       </div>
     </div>
-    <div class="ad-indicators" id="ad-indicators">
-      <span class="ad-dot active"></span>
-      <span class="ad-dot"></span>
-    </div>
-    <button class="ad-close" onclick="closeAdBanner()">&#10005;</button>
   </div>
 
   <!-- ==================== Global News Ticker ==================== -->
@@ -872,7 +1059,7 @@ a{color:inherit;text-decoration:none}
   <!-- ==================== Page: Write (自动撰写) ==================== -->
   <div id="page-write" class="page app-page">
     <div class="section-header">
-      <button class="back-btn" onclick="navigateTo('home')">&#8592;</button>
+      <button class="back-btn" onclick="navigateTo('home')">←</button>
       <h2>自动撰写</h2>
     </div>
 
@@ -880,85 +1067,131 @@ a{color:inherit;text-decoration:none}
       <div class="write-section-title">选择报告类型</div>
       <div class="doc-type-grid">
         <div class="doc-type-card active" data-type="dd" onclick="selectDocType('dd', this)">
-          <div class="dtype-icon">&#128203;</div>
+          <div class="dtype-icon">📃</div>
           <div class="dtype-name">AI尽调报告</div>
-          <div class="dtype-desc">基于上传资料生成</div>
+          <div class="dtype-desc">联网搜索+文件+录入</div>
         </div>
-        <div class="doc-type-card" data-type="audit" onclick="selectDocType('audit', this)">
-          <div class="dtype-icon">&#128202;</div>
+        <div class="doc-type-card coming-soon">
+          <div class="dtype-icon">🔒</div>
           <div class="dtype-name">AI审计报告</div>
-          <div class="dtype-desc">基于上传资料生成</div>
+          <div class="dtype-desc">即将上线</div>
         </div>
-        <div class="doc-type-card" data-type="proposal" onclick="selectDocType('proposal', this)">
-          <div class="dtype-icon">&#128188;</div>
+        <div class="doc-type-card coming-soon">
+          <div class="dtype-icon">🔒</div>
           <div class="dtype-name">AI融资建议书</div>
-          <div class="dtype-desc">基于上传资料生成</div>
+          <div class="dtype-desc">即将上线</div>
         </div>
         <div class="doc-type-card coming-soon">
-          <div class="dtype-icon">&#128274;</div>
+          <div class="dtype-icon">🔒</div>
           <div class="dtype-name">IPO招股说明书</div>
-          <div class="dtype-desc">有待开通</div>
+          <div class="dtype-desc">即将上线</div>
         </div>
         <div class="doc-type-card coming-soon">
-          <div class="dtype-icon">&#128274;</div>
+          <div class="dtype-icon">🔒</div>
           <div class="dtype-name">债权募集说明书</div>
-          <div class="dtype-desc">有待开通</div>
+          <div class="dtype-desc">即将上线</div>
         </div>
       </div>
     </div>
 
+    <!-- Company Info -->
+    <div class="write-section">
+      <div class="write-section-title">📝 尽调基本信息 <span style="color:#d4a853;font-size:11px">（必填）</span></div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px">尽调企业全称 <span style="color:#e74c3c">*</span></label>
+        <input type="text" id="dd-company-name" placeholder="请输入尽调企业全称，例如：深圳金证优智科技有限公司" 
+               style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px"
+               oninput="updateGenerateBtn()">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px">所属行业 <span style="color:#e74c3c">*</span> <span style="color:rgba(255,255,255,0.25);font-size:10px">（用于行业分析，如：软件和信息技术服务业）</span></label>
+        <input type="text" id="dd-industry" placeholder="请输入企业所属行业，例如：软件和信息技术服务业、生物医药、新能源、人工智能"
+               style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px"
+               oninput="updateGenerateBtn()">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px">尽调目的说明 <span style="color:#e74c3c">*</span></label>
+        <textarea id="dd-purpose" placeholder="请简要描述尽调目的，例如：拟对该公司进行股权投资/并购尽调/授信合作尽调等"
+                  style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px;min-height:70px;resize:vertical"
+                  oninput="updateGenerateBtn()"></textarea>
+      </div>
+    </div>
+
+    <!-- Free-text input -->
+    <div class="write-section">
+      <div class="write-section-title">✏️ 补充信息录入 <span style="color:#d4a853;font-size:11px">（选填，将注入报告）</span></div>
+      <textarea id="dd-extra-info" placeholder="可在此输入任何已知的企业信息，例如：企业主营业务介绍、股权结构情况、近三年营收和利润概况、重大合同或诉讼情况、行业地位描述等。此内容将被大模型优先引用到报告中。"
+                style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px;min-height:100px;resize:vertical"
+                oninput="updateGenerateBtn()"></textarea>
+    </div>
+
+    <!-- File Upload -->
     <div class="write-section" id="upload-section">
-      <div class="write-section-title">上传参考文件</div>
-      <div class="write-subtitle">上传相关文件作为AI撰写的参考依据（支持pdf、doc、docx）</div>
+      <div class="write-section-title">📎 上传参考文件 <span style="color:rgba(255,255,255,0.35);font-size:11px">（选填，支持 PDF/DOC/DOCX/XLS/XLSX/TXT）</span></div>
+      <div class="write-subtitle">仅支持 PDF、DOC、DOCX、XLS、XLSX、TXT 格式。文件标题需与实际内容一致，否则判定为无效。</div>
       
       <div class="upload-list" id="upload-list">
-        <div class="upload-row" data-key="legal">
-          <div class="upload-label"><span class="upl-icon">&#128220;</span><span>法律意见书</span></div>
-          <div class="upload-status" id="status-legal">
-            <span class="upl-state">未上传</span>
-            <button class="upl-btn" onclick="triggerUpload('legal')">选择文件</button>
-          </div>
-        </div>
-        <div class="upload-row" data-key="audit">
-          <div class="upload-label"><span class="upl-icon">&#128200;</span><span>审计报告</span></div>
-          <div class="upload-status" id="status-audit">
-            <span class="upl-state">未上传</span>
-            <button class="upl-btn" onclick="triggerUpload('audit')">选择文件</button>
-          </div>
-        </div>
         <div class="upload-row" data-key="financial">
-          <div class="upload-label"><span class="upl-icon">&#128176;</span><span>会计报表</span></div>
+          <div class="upload-label"><span class="upl-icon">📊</span><span>会计报表</span></div>
           <div class="upload-status" id="status-financial">
             <span class="upl-state">未上传</span>
             <button class="upl-btn" onclick="triggerUpload('financial')">选择文件</button>
           </div>
         </div>
+        <div class="upload-row" data-key="audit">
+          <div class="upload-label"><span class="upl-icon">📑</span><span>审计报告</span></div>
+          <div class="upload-status" id="status-audit">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('audit')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="legal">
+          <div class="upload-label"><span class="upl-icon">⚖️</span><span>法律意见书</span></div>
+          <div class="upload-status" id="status-legal">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('legal')">选择文件</button>
+          </div>
+        </div>
         <div class="upload-row" data-key="dd_report">
-          <div class="upload-label"><span class="upl-icon">&#128269;</span><span>尽调报告</span></div>
+          <div class="upload-label"><span class="upl-icon">🔍</span><span>尽调报告</span></div>
           <div class="upload-status" id="status-dd_report">
             <span class="upl-state">未上传</span>
             <button class="upl-btn" onclick="triggerUpload('dd_report')">选择文件</button>
           </div>
         </div>
         <div class="upload-row" data-key="industry">
-          <div class="upload-label"><span class="upl-icon">&#128240;</span><span>行业研究报告</span></div>
+          <div class="upload-label"><span class="upl-icon">📰</span><span>行业研究报告</span></div>
           <div class="upload-status" id="status-industry">
             <span class="upl-state">未上传</span>
             <button class="upl-btn" onclick="triggerUpload('industry')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="bank_flow">
+          <div class="upload-label"><span class="upl-icon">🏦</span><span>银行流水</span></div>
+          <div class="upload-status" id="status-bank_flow">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('bank_flow')">选择文件</button>
+          </div>
+        </div>
+        <div class="upload-row" data-key="contract">
+          <div class="upload-label"><span class="upl-icon">📋</span><span>重大合同</span></div>
+          <div class="upload-status" id="status-contract">
+            <span class="upl-state">未上传</span>
+            <button class="upl-btn" onclick="triggerUpload('contract')">选择文件</button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="gen-section" id="gen-section">
-      <button class="btn-gen" id="btn-generate" onclick="generateWriteReport()" disabled>&#9889; 一键生成报告</button>
-      <p class="gen-hint" id="gen-hint">请先选择报告类型并上传参考文件</p>
+      <button class="btn-gen" id="btn-generate" onclick="generateWriteReport()" disabled>⚡ 一键生成报告</button>
+      <p class="gen-hint" id="gen-hint">请填写企业全称、尽调目的，并上传会计报表</p>
     </div>
 
     <div class="content-area" id="write-result" style="display:none">
       <div class="report-actions">
-        <button class="btn-action" onclick="previewWriteReport()">&#128065; 预览报告</button>
-        <button class="btn-action" onclick="downloadWriteReport()">&#128229; 下载报告</button>
+        <button class="btn-action" onclick="previewWriteReport()">👁 预览报告</button>
+        <button class="btn-action" onclick="downloadWriteReport()">📥 下载报告</button>
       </div>
       <div class="report-summary" id="report-summary"></div>
     </div>
@@ -1072,7 +1305,7 @@ a{color:inherit;text-decoration:none}
 <script>/* ==================== AI Investment Banking Expert ==================== */
 
 // ======================== STATE ========================
-var API_BASE = '/ibexpert';
+var API_BASE = 'http://localhost:3001';
 const APP = {
   user: null,
   users: JSON.parse(localStorage.getItem('aib_users') || '{}'),
@@ -1120,7 +1353,19 @@ var AD_CONFIG = [
     subtitle: 'AI驱动 · 智能决策 · 专业投顾',
     image: 'images/AI智能投顾@10x.jpg',
     tag: '推荐',
-    link: '#'
+    link: '#',
+    // 产品介绍内容
+    intro: {
+      type: 'product',
+      features: [
+        { icon: '📊', title: '智能投研分析', desc: '基于大模型的智能投研引擎，实时抓取全球金融数据，自动生成深度分析报告，支持IPO、并购、债券等多业务场景' },
+        { icon: '🎯', title: '精准机会雷达', desc: 'AI驱动的项目机会智能挖掘，从海量信息中精准捕捉投行业务机会，自动分类推送，不遗漏任何商机' },
+        { icon: '📈', title: '市场实时追踪', desc: '7×24小时市场动态监控，关键指标异常自动预警，让您第一时间掌握市场变化' },
+        { icon: '🔍', title: '一键智能尽调', desc: '输入企业名称即可自动生成尽职调查报告，涵盖财务、法务、业务等多维度，大幅提升尽调效率' },
+        { icon: '📝', title: '智能文档撰写', desc: 'AI辅助撰写投行各类文档，招股说明书、募集说明书、尽职调查报告等，提效80%以上' },
+        { icon: '🤖', title: '7×24智能问答', desc: '随时随地提问，AI助手即时响应，涵盖投行业务知识、监管规则、市场数据等全方位支持' }
+      ]
+    }
   },
   {
     id: 'ad2',
@@ -1128,7 +1373,29 @@ var AD_CONFIG = [
     subtitle: '算力赋能 · 智算未来 · 企业首选',
     image: 'images/一体机@10x.jpg',
     tag: '新品',
-    link: '#'
+    link: '#',
+    // 产品介绍内容
+    intro: {
+      type: 'product',
+      features: [
+        { icon: '🚀', title: '华为昇腾AI算力', desc: '搭载华为昇腾910B芯片，提供高达256TFLOPS FP16算力，满足大模型训练与推理的全栈算力需求' },
+        { icon: '🔒', title: '金融级安全合规', desc: '本地化私有部署，数据不出域，满足金融行业最高安全合规要求，通过等保三级认证' },
+        { icon: '💡', title: '投行专用大模型', desc: '内置金融投行领域大模型，针对IPO、并购、债券、ABS等业务深度优化，专业知识问答准确率超95%' },
+        { icon: '⚡', title: '一键部署平台', desc: '开箱即用，预装AI投行专家全栈应用，从模型部署到业务上线仅需1小时' },
+        { icon: '🔄', title: '混合云弹性架构', desc: '支持私有云+公有云混合部署，业务高峰期自动弹性扩展，兼顾性能与成本' },
+        { icon: '📋', title: '全流程项目管理', desc: '集成投行项目管理、协同办公、客户管理、文档管理等全套工具，一站式投行工作平台' }
+      ]
+    }
+  },
+  {
+    id: 'ad3',
+    title: '投行业务资源交流群',
+    subtitle: '扫码入群 · 资源对接 · 行业资讯',
+    image: '',
+    tag: '社群',
+    link: '#',
+    isQR: true,
+    qrData: 'https://t.me/+ibexpert'
   }
 ];
 
@@ -2088,43 +2355,83 @@ function registerSubmit(e) {
 var adTimer = null;
 var adIdx = 0;
 
+// Direct click handler called from HTML onclick
+function handleAdClick(idx) {
+  if (idx < 0 || idx >= AD_CONFIG.length) return;
+  var ad = AD_CONFIG[idx];
+  
+  pauseAdRotation();
+  
+  // QR code - use uploaded image
+  if (ad.isQR === true) {
+    var html = '<div style="text-align:center;padding:20px 0">';
+    html += '<img src="assets/qrcode.png" style="width:200px;height:200px;border-radius:12px;border:3px solid rgba(212,168,83,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.3)" alt="群二维码" />';
+    html += '<p style="margin-top:16px;font-size:15px;color:#d4a853;font-weight:600">🤝 扫码加入投行业务资源交流群</p>';
+    html += '<p style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.4)">与同行交流 · 资源对接 · 获取最新行业动态</p>';
+    html += '</div>';
+    openModal('投行业务资源交流群', html);
+    return;
+  }
+  
+  // Product detail
+  if (ad.intro && ad.intro.features && ad.intro.features.length > 0) {
+    var features = ad.intro.features;
+    var html = '<div style="padding:4px 0">';
+    html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:rgba(212,168,83,0.06);border-radius:12px;border:1px solid rgba(212,168,83,0.1)">';
+    html += '<div style="width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,rgba(212,168,83,0.15),rgba(212,168,83,0.05));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">';
+    html += idx === 0 ? '🤖' : '💻';
+    html += '</div>';
+    html += '<div><div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:2px">' + ad.title + '</div>';
+    html += '<div style="font-size:12px;color:rgba(212,168,83,0.6)">' + ad.subtitle + '</div></div></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr;gap:10px">';
+    for (var fi = 0; fi < features.length; fi++) {
+      var f = features[fi];
+      html += '<div class="prod-feature-card">';
+      html += '<div style="font-size:24px;flex-shrink:0;width:36px;text-align:center;line-height:1.4">' + f.icon + '</div>';
+      html += '<div><div style="font-size:14px;font-weight:600;color:#d4a853;margin-bottom:3px">' + f.title + '</div>';
+      html += '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6">' + f.desc + '</div></div></div>';
+    }
+    html += '</div>';
+    html += '<div style="margin-top:20px;padding:14px 16px;background:linear-gradient(135deg,rgba(212,168,83,0.08),rgba(212,168,83,0.02));border-radius:10px;border:1px solid rgba(212,168,83,0.12);text-align:center">';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,0.5)">📞 了解更多产品详情，请联系优智科技销售团队</div>';
+    html += '<div style="font-size:12px;color:rgba(212,168,83,0.5);margin-top:4px">咨询热线：400-888-6888</div></div>';
+    html += '</div>';
+    openModal(ad.title, html);
+    return;
+  }
+  
+  // Fallback: image
+  var imgHtml = '<div style="text-align:center"><img src="' + ad.image + '" style="max-width:100%;max-height:70vh;border-radius:8px" alt="' + ad.title + '" /></div>';
+  imgHtml += '<p style="text-align:center;margin-top:10px;font-size:14px;color:rgba(255,255,255,0.7)">' + ad.title + ' - ' + ad.subtitle + '</p>';
+  openModal(ad.title, imgHtml);
+}
+
+// Keep adClick alias for backward compatibility
+var adClick = handleAdClick;
+
 function initAdBanner() {
-  // Populate from config
   var slider = document.getElementById('ad-slider');
   var indicators = document.getElementById('ad-indicators');
   if (!slider || !indicators) return;
   
-  // Build slides from config
-  var slidesHTML = '';
+  var slides = slider.querySelectorAll('.ad-slide');
   var dotsHTML = '';
-  for (var ai = 0; ai < AD_CONFIG.length; ai++) {
-    var ad = AD_CONFIG[ai];
-    var activeClass = ai === 0 ? ' active' : '';
-    var tagColor = ai === 0 ? 'linear-gradient(135deg,#d4a853,#b8860b)' : '#ff9800';
-    slidesHTML += '<div class="ad-slide' + activeClass + '" data-idx="' + ai + '" onclick="adClick(' + ai + ')">';
-    slidesHTML += '<span class="ad-tag" style="background:' + tagColor + '">' + ad.tag + '</span>';
-    slidesHTML += '<span class="ad-title">' + ad.title + '</span>';
-    slidesHTML += '<span class="ad-sub">' + ad.subtitle + '</span>';
-    slidesHTML += '</div>';
-    dotsHTML += '<span class="ad-dot' + activeClass + '"></span>';
+  for (var ai = 0; ai < slides.length; ai++) {
+    dotsHTML += '<span class="ad-dot' + (ai === 0 ? ' active' : '') + '"></span>';
   }
-  if (AD_CONFIG.length > 0) {
-    slider.innerHTML = slidesHTML;
-    indicators.innerHTML = dotsHTML;
-  }
+  if (dotsHTML) indicators.innerHTML = dotsHTML;
   
-  // Start rotation
-  if (AD_CONFIG.length > 1) {
+  if (slides.length > 1) {
     adTimer = setInterval(rotateAd, 5000);
   }
 }
 
 function rotateAd() {
-  adIdx = (adIdx + 1) % AD_CONFIG.length;
   var slides = document.querySelectorAll('#ad-slider .ad-slide');
   var dots = document.querySelectorAll('#ad-indicators .ad-dot');
+  if (slides.length === 0) return;
+  adIdx = (adIdx + 1) % slides.length;
   for (var ai = 0; ai < slides.length; ai++) {
-    slides[ai].classList.remove('active');
     if (slides[ai]) slides[ai].classList.remove('active');
   }
   for (var ai = 0; ai < dots.length; ai++) {
@@ -2132,16 +2439,6 @@ function rotateAd() {
   }
   if (slides[adIdx]) slides[adIdx].classList.add('active');
   if (dots[adIdx]) dots[adIdx].classList.add('active');
-}
-
-function adClick(idx) {
-  var ad = AD_CONFIG[idx];
-  if (!ad) return;
-  // Show full image in modal
-  var imgHtml = '<div style="text-align:center"><img src="' + ad.image + '" style="max-width:100%;max-height:70vh;border-radius:8px" alt="' + ad.title + '" /></div>';
-  imgHtml += '<p style="text-align:center;margin-top:10px;font-size:14px;color:rgba(255,255,255,0.7)">' + ad.title + ' - ' + ad.subtitle + '</p>';
-  openModal(ad.title, imgHtml);
-  pauseAdRotation();
 }
 
 function pauseAdRotation() {
@@ -2168,17 +2465,69 @@ function closeAdBanner() {
 // ======================== GLOBAL NEWS TICKER ========================
 function initNewsTicker() {
   var track = document.getElementById('global-ticker-track');
-  if (!track || TRENDING_NEWS.length === 0) return;
+  if (!track) return;
   
-  // Build ticker content (doubled for seamless loop)
-  var html = '<span class="ticker-content">';
-  for (var ni = 0; ni < 2; ni++) {
-    for (var nj = 0; nj < TRENDING_NEWS.length; nj++) {
-      html += '<span class="ticker-item" onclick=\'showNewsDetail("' + TRENDING_NEWS[nj].replace(/'/g, "\\'") + '")\'>' + TRENDING_NEWS[nj] + '</span>';
-    }
-  }
-  html += '</span>';
-  track.innerHTML = html;
+  // Fetch trending news from DeepSeek API first
+  track.innerHTML = '<span class="ticker-content" style="animation:none;color:rgba(255,255,255,0.3)">AI 正在搜索最新热搜...</span>';
+  
+  fetch(API_BASE + '/api/debt/hot-news?t=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      var titles = [];
+      if (res.success && res.data && Array.isArray(res.data)) {
+        for (var i = 0; i < res.data.length; i++) {
+          var item = res.data[i];
+          titles.push(item.title || (typeof item === 'string' ? item : ''));
+        }
+      }
+      // Fallback to hardcoded if API returned empty
+      if (titles.length === 0) {
+        titles = [
+          '注册制下IPO审核问询趋于精细化，监管层压实中介机构责任',
+          '公司债发行规模同比增长15%，绿色债券成新增长点',
+          '公募REITs试点扩围至商业地产，多家企业密集申报',
+          'ABS产品结构持续创新，知识产权ABS和数据资产ABS加速落地',
+          '并购重组市场回暖，产业整合型交易占比显著提升',
+          '央行降准释放流动性，债市收益率曲线趋于平坦化',
+          '科创板做市商制度运行效果良好，市场流动性改善明显',
+          '企业债注册制改革深化，审核效率大幅提升',
+          'S基金发展提速，为股权投资提供多元化退出渠道',
+          '北交所上市公司质量稳步提升，市场功能不断完善',
+          '上市公司回购增持活跃，股权激励方案创新增多',
+          '银行间市场ABS发行规模同比增长，不良资产ABS创新高',
+          '跨境并购监管新规落地，鼓励产业升级型海外并购',
+          '可转债市场持续扩容，成为再融资重要工具',
+          '投行执业质量评价体系完善，分类监管推动行业良性发展'
+        ];
+      }
+      
+      // Store globally for reuse
+      TRENDING_NEWS = titles;
+      
+      // Render ticker
+      var html = '<span class="ticker-content">';
+      for (var ni = 0; ni < 2; ni++) {
+        for (var nj = 0; nj < titles.length; nj++) {
+          html += '<span class="ticker-item" onclick=\'showNewsDetail("' + titles[nj].replace(/'/g, "\\'") + '")\'>' + titles[nj] + '</span>';
+        }
+      }
+      html += '</span>';
+      track.innerHTML = html;
+    })
+    .catch(function() {
+      // On error: use current TRENDING_NEWS array
+      var titles = TRENDING_NEWS.length > 0 ? TRENDING_NEWS : [
+        '注册制下IPO审核问询趋于精细化', '公司债发行规模同比增长15%', '公募REITs试点扩围'
+      ];
+      var html = '<span class="ticker-content">';
+      for (var ni = 0; ni < 2; ni++) {
+        for (var nj = 0; nj < titles.length; nj++) {
+          html += '<span class="ticker-item" onclick=\'showNewsDetail("' + titles[nj].replace(/'/g, "\\'") + '")\'>' + titles[nj] + '</span>';
+        }
+      }
+      html += '</span>';
+      track.innerHTML = html;
+    });
 }
 
 function showNewsDetail(text) {
@@ -2254,6 +2603,18 @@ function updatePointsBar(u) {
   if (spentEl) spentEl.textContent = spent;
 }
 
+// Reset points (add 5000, clear history)
+function resetPoints() {
+  if (APP.user) {
+    APP.user.points = 5000;
+    APP.user.pointsHistory = [];
+    saveUsers();
+    refreshUser();
+    updatePointsBar(APP.user);
+    showToast('积分已重置为 5000', 'success');
+  }
+}
+
 function startup() {
   try {
     // Init ad banner and news ticker
@@ -2326,7 +2687,7 @@ function startup() {
 
 
 // ======================== WRITE MODULE ========================
-window.writeState = { docType: 'dd', files: {}, reportGenerated: false, reportContent: '' };
+window.writeState = { docType: 'dd', files: {}, fileContents: {}, reportGenerated: false, reportContent: '', company: '', purpose: '', industry: '', extraInfo: '' };
 
 function selectDocType(type, el) {
   writeState.docType = type;
@@ -2342,10 +2703,53 @@ function triggerUpload(key) {
     input = document.createElement('input');
     input.type = 'file';
     input.id = 'hup-' + key;
-    input.accept = '.pdf,.doc,.docx,.txt,.xls,.xlsx';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.txt';
     input.style.display = 'none';
     input.onchange = function(e) {
-      if (e.target.files && e.target.files[0]) handleFileSelected(key, e.target.files[0].name);
+      if (e.target.files && e.target.files[0]) {
+        var file = e.target.files[0];
+        var filename = file.name;
+        // File content-title consistency check
+        var keyLabels = {
+          financial: '会计报表',
+          audit: '审计报告',
+          legal: '法律意见书',
+          dd_report: '尽调报告',
+          industry: '行业研究报告',
+          bank_flow: '银行流水',
+          contract: '重大合同'
+        };
+        var expectedLabel = keyLabels[key] || key;
+        // Check extension
+        var ext = filename.split('.').pop().toLowerCase();
+        if (!['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'].includes(ext)) {
+          showToast('不支持的文件格式，请上传 PDF/DOC/DOCX/XLS/XLSX/TXT', 'error');
+          return;
+        }
+        // Basic check: filename should contain relevant keywords
+        var filenameLower = filename.toLowerCase();
+        if (key === 'financial' && !filenameLower.match(/会计|财务|报表|financial|balance|income|cash|flow|资产|利润|负债/)) {
+          showToast('文件名称与"' + expectedLabel + '"不匹配，请确认后重新上传', 'warning');
+        }
+        // Read file content using FileReader
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var content = ev.target.result;
+          // Store content (truncate to ~50KB to avoid huge payloads)
+          var maxLen = 50000;
+          if (content && content.length > maxLen) {
+            content = content.substring(0, maxLen) + '\n\n... [文件过大，内容已截断，仅展示前 ' + Math.round(maxLen/1024) + 'KB]';
+          }
+          writeState.fileContents[key] = content;
+        };
+        reader.onerror = function() {
+          writeState.fileContents[key] = '[文件读取失败]';
+          showToast('文件 "' + filename + '" 读取失败，将仅使用文件名作为参考', 'warning');
+        };
+        // Read as text (for binary files like PDF/DOC, text content may be garbled)
+        reader.readAsText(file, 'UTF-8');
+        handleFileSelected(key, filename);
+      }
     };
     document.body.appendChild(input);
   }
@@ -2358,12 +2762,13 @@ function handleFileSelected(key, filename) {
   var row = document.querySelector('.upload-row[data-key="' + key + '"]');
   if (row) row.classList.add('uploaded');
   var st = document.getElementById('status-' + key);
-  if (st) st.innerHTML = '<span class="upl-state">\u2713</span><span class="upl-filename">' + filename + '</span><button class="upl-btn" onclick=\'removeFile("' + key + '")\'>\u2715</button>';
+  if (st) st.innerHTML = '<span class="upl-state">✓</span><span class="upl-filename">' + filename + '</span><button class="upl-btn" onclick=\'removeFile("' + key + '")\'>✕</button>';
   updateGenerateBtn();
 }
 
 function removeFile(key) {
   delete writeState.files[key];
+  delete writeState.fileContents[key];
   var row = document.querySelector('.upload-row[data-key="' + key + '"]');
   if (row) row.classList.remove('uploaded');
   var st = document.getElementById('status-' + key);
@@ -2374,61 +2779,258 @@ function removeFile(key) {
 function updateGenerateBtn() {
   var btn = document.getElementById('btn-generate');
   var hint = document.getElementById('gen-hint');
+  var company = (document.getElementById('dd-company-name') || {}).value || '';
+  var industry = (document.getElementById('dd-industry') || {}).value || '';
+  var purpose = (document.getElementById('dd-purpose') || {}).value || '';
+  var extraInfo = (document.getElementById('dd-extra-info') || {}).value || '';
+  writeState.company = company.trim();
+  writeState.industry = industry.trim();
+  writeState.purpose = purpose.trim();
+  writeState.extraInfo = extraInfo.trim();
+  
   var fc = Object.keys(writeState.files).length;
-  if (writeState.docType && fc > 0) {
-    btn.disabled = false;
-    if (hint) hint.textContent = '已选择 ' + fc + ' 个参考文件';
-  } else {
+  
+  if (!company) {
     btn.disabled = true;
-    if (hint) hint.textContent = '请先选择报告类型并上传参考文件';
+    if (hint) hint.textContent = '请填写尽调企业全称';
+  } else if (!industry) {
+    btn.disabled = true;
+    if (hint) hint.textContent = '请填写企业所属行业';
+  } else if (!purpose) {
+    btn.disabled = true;
+    if (hint) hint.textContent = '请填写尽调目的说明';
+  } else {
+    btn.disabled = false;
+    if (hint) hint.textContent = '已就绪 · 企业：' + company + ' · 行业：' + industry;
   }
 }
 
 function generateWriteReport() {
-  if (!spendPoints(randomSpend() + 15, '报告自动生成')) return;
+  if (!writeState.company) return showToast('请填写尽调企业全称', 'error');
+  if (!writeState.industry) return showToast('请填写企业所属行业', 'error');
+  if (!writeState.purpose) return showToast('请填写尽调目的说明', 'error');
+  if (!spendPoints(randomSpend() + 20, 'AI尽调报告生成')) return;
+  
   var btn = document.getElementById('btn-generate');
   btn.disabled = true;
-  btn.textContent = 'AI 正在生成中...';
+  btn.textContent = '⏳ AI 正在生成报告，请耐心等待...';
   document.getElementById('write-result').style.display = 'none';
-  setTimeout(function() {
+  
+  // Call backend API
+  var API_BASE = window.API_BASE || '';
+  fetch(API_BASE + '/api/write/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      company: writeState.company,
+      industry: writeState.industry,
+      purpose: writeState.purpose,
+      extraInfo: writeState.extraInfo || '',
+      files: writeState.files,
+      fileContents: writeState.fileContents || {},
+      docType: writeState.docType
+    })
+  }).then(function(res) {
+    if (!res.ok) { return res.json().then(function(err) { throw new Error(err.message || err.error || '服务异常'); }); }
+    return res.json();
+  }).then(function(data) {
+    // Server wraps response in { success:true, data:{company,content}, message:... }
+    var content = (data.data && data.data.content) || data.content || data;
+    writeState.reportContent = content;
+    writeState.reportGenerated = true;
+    document.getElementById('report-summary').innerHTML = writeState.reportContent;
+    document.getElementById('write-result').style.display = 'block';
+    btn.innerHTML = '⚡ 重新生成';
+    btn.disabled = false;
+    var hint = document.getElementById('gen-hint');
+    if (hint) hint.textContent = '报告已生成，点击预览查看完整内容';
+    showToast('尽调报告生成成功', 'success');
+  }).catch(function(err) {
+    console.error('[WRITE ERROR]', err);
+    // Fallback to mock content
     var content = mockReportContent();
     writeState.reportContent = content;
     writeState.reportGenerated = true;
     document.getElementById('report-summary').innerHTML = content;
     document.getElementById('write-result').style.display = 'block';
-    btn.innerHTML = '&#9889; 重新生成';
+    btn.innerHTML = '⚡ 重新生成';
     btn.disabled = false;
-    var h = document.getElementById('gen-hint');
-    if (h) h.textContent = '报告已生成，点击预览或下载';
-  }, 2000);
+    showToast('使用了本地模拟数据（AI服务暂不可用）', 'warning');
+  });
 }
 
 function mockReportContent() {
-  var date = new Date().toISOString().slice(0,10);
+  var company = writeState.company || 'XX有限公司';
+  var date = new Date().toISOString().slice(0, 10);
   var files = Object.values(writeState.files);
-  var flist = files.length > 0 ? files.join(', ') : '参考文件';
-  var type = writeState.docType;
-  if (type === 'dd') return '<p><strong>AI尽调报告</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>尽调结论</strong>：基于参考文件（' + flist + '），经AI综合分析，被调企业整体经营状况良好。</p><p><strong>关键发现</strong>：<br> - 公司治理结构完善，三会运作规范<br> - 主营业务收入连续三年增长，毛利率稳定<br> - 资产负债率处于行业合理水平<br> - 核心技术团队稳定</p><p><strong>风险提示</strong>：行业政策变化风险、客户集中度偏高</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
-  if (type === 'audit') return '<p><strong>AI审计报告</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>审计意见</strong>：基于上传资料（' + flist + '），AI审计分析认为，被审计单位财务报表在所有重大方面按照企业会计准则的规定编制。</p><p><strong>审计发现</strong>：<br> - 收入确认政策符合会计准则<br> - 资产减值准备计提充分<br> - 关联交易披露完整<br> - 内部控制制度健全有效</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
-  return '<p><strong>AI融资建议书</strong> | ' + date + '</p><div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0"></div><p><strong>融资概述</strong>：基于上传资料（' + flist + '），建议采用股权融资为主、债权融资为辅的策略。</p><p><strong>方案要点</strong>：<br> - 建议融资总额：5-8亿元<br> - 股权占比60%，债权40%<br> - 建议估值15-18倍PE<br> - 资金用于研发40%、产能30%</p><p><strong>退出机制</strong>：3年内推进IPO或并购退出</p><p><em>本报告由AI基于上传文件自动生成，仅供参考。</em></p>';
+  var flist = files.length > 0 ? files.join(', ') : '（用户未上传任何参考文件）';
+  var purpose = writeState.purpose || '股权投资尽调';
+  var hasFiles = files.length > 0;
+  
+  var content = '<div style="text-align:center;padding:20px;margin-bottom:20px"><h1 style="color:#d4a853;font-size:20px">' + company + '</h1><h2 style="font-size:16px;color:#fff">AI辅助尽职调查报告</h2><p style="color:rgba(255,255,255,0.4)">基准日：' + date + ' | 报告生成日：' + date + '</p></div>';
+
+  var srcUser = hasFiles ? '【📁 用户上传文件】' : '';
+  var srcPublic = '【🔍 公开可查信息】';
+  var srcMissing = '【❓ 数据缺失】';
+  var srcEstimate = '【📊 行业参考】';
+  var srcGuess = '【⚠️ 存疑待核实】';
+
+  var sections = [
+    { title: '一、尽调摘要', icon: '📋', content:
+      '<p><strong>标的主体</strong>：' + company + ' ' + srcPublic + '</p>' +
+      '<p><strong>尽调目的</strong>：' + purpose + ' ' + srcPublic + '</p>' +
+      '<p><strong>核心经营数据</strong>：企业近三年具体财务数据未在本次提供的资料中完整呈现，无法进行量化分析 ' + srcMissing + '</p>' +
+      '<p><strong>需关注事项</strong>：基于现有有限资料，以下方面建议在后续尽调中重点关注：(1)实际控制人及股权架构的完整穿透；(2)近三年经审计的财务报告；(3)关联交易及资金占用情况；(4)未决诉讼及对外担保情况 ' + srcGuess + '</p>' +
+      '<p><strong>总体意见</strong>：□审慎介入（因关键信息缺失，建议完成补充尽调后再作最终判断）</p>' },
+
+    { title: '二、企业基本情况及历史沿革', icon: '🏢', content:
+      '<table class="report-table"><tr><td>指标</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>统一社会信用代码</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>法定代表人</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>注册资本</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>实缴资本</td><td>需通过工商查档确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>企业类型</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>经营范围</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' +
+      '<p style="margin-top:8px"><strong>历史沿革</strong>：企业的设立时间、历次股权变更、增资减资、改制重组等信息暂无法从本次提供的材料中获取。建议通过国家企业信用信息公示系统查询工商内档 ' + srcMissing + '</p>' +
+      '<p><strong>出资核查</strong>：是否存在虚假出资、抽逃出资等情形需通过查阅验资报告及银行流水核实 ' + srcMissing + '</p>' },
+
+    { title: '三、股权结构与公司治理', icon: '👥', content:
+      '<p style="color:#e74c3c;font-weight:600">⚠️ 本章为尽调报告的核心章节，以下信息需高度重视</p>' +
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>股权架构穿透</td><td>暂无法从已提供材料中完成穿透</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>实际控制人</td><td>暂无法从现有资料确认实际控制人身份</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>股权质押/冻结</td><td>需通过企业征信及工商查档确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>股权代持</td><td>是否存在代持关系需通过访谈及协议审查确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>股东背景/征信</td><td>需调取股东企业及个人征信报告</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>三会设置</td><td>需查阅公司章程及会议记录</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>关联方及关联交易</td><td>需企业提供关联方清单及交易明细</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' +
+      '<p style="margin-top:8px;color:rgba(255,255,255,0.45);font-size:12px">💡 建议：通过国家企业信用信息公示系统、企查查/天眼查等平台获取初步股权架构，并与企业提供的股东名册交叉验证。</p>' },
+
+    { title: '四、主营业务经营情况', icon: '💼', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>主营产品/服务</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>盈利模式</td><td>暂无法从已提供材料中确认</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>前五大客户</td><td>客户信息未见公开披露</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>客户集中度</td><td>需企业提供客户明细表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>前五大供应商</td><td>供应商信息未见公开披露</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>产能及利用率</td><td>需实地调研获取</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '五、行业及市场竞争分析', icon: '📈', content:
+      '<p>以下分析基于AI模型训练数据中的公开行业信息，企业在该行业中的具体市场地位和份额需进一步调研确认 ' + srcGuess + '</p>' +
+      '<table class="report-table"><tr><td>分析维度</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>行业分类及发展阶段</td><td>需结合企业具体经营范围判断</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>行业政策环境</td><td>需查阅最新行业政策文件</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>竞争格局</td><td>目标企业具体竞争地位需调研确认</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '六、财务尽职调查', icon: '💰', content:
+      '<p style="color:#e74c3c;font-weight:600">⚠️ 请注意：以下财务数据均无法从现有资料中获取，以下为状态说明</p>' +
+      '<table class="report-table"><tr><td>财务指标</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>近三年审计报告</td><td>' + (hasFiles ? '已上传，具体数据以报告内容为准' : '未提供，需补充提供') + '</td><td>' + (hasFiles ? srcUser : srcMissing) + '</td></tr>' +
+      '<tr><td>营业收入（近三年）</td><td>需查阅审计报告或财务报表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>净利润（近三年）</td><td>需查阅审计报告或财务报表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>综合毛利率</td><td>需查阅审计报告或财务报表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>资产负债率</td><td>需查阅审计报告或财务报表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>经营活动现金流</td><td>需查阅现金流量表</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' +
+      '<p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:8px">注：任何财务指标的行业参考值仅为参考，不反映该企业的实际财务状况。具体数据以经审计的财务报告为准。</p>' },
+
+    { title: '七、资产、负债及或有事项', icon: '🏗️', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>土地/房产权属</td><td>需核查不动产登记证明</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>商标/专利/软著</td><td>需核查知识产权登记证书</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>银行借款明细</td><td>需调取企业征信报告</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>对外担保</td><td>需核查企业征信及贷款卡信息</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>或有负债</td><td>需企业书面确认并核查诉讼情况</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '八、税务合规情况', icon: '🧾', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>适用税种及税率</td><td>需查阅企业纳税申报表</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>近三年纳税记录</td><td>需企业提供完税凭证</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>税务稽查记录</td><td>未发现公开可查的税务处罚记录</td><td>' + srcPublic + '</td></tr>' +
+      '<tr><td>税收优惠</td><td>需核查企业是否符合高新技术企业等资质</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '九、人力资源核查', icon: '👨‍💼', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>人员规模</td><td>需企业提供花名册</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>组织架构</td><td>需企业提供组织架构图</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>劳动合同签订</td><td>需抽查员工劳动合同</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>社保公积金缴纳</td><td>需核查社保缴纳记录</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>劳动仲裁/纠纷</td><td>未发现公开可查的劳动纠纷记录</td><td>' + srcPublic + '</td></tr>' +
+      '</table>' },
+
+    { title: '十、法律、诉讼与资质合规', icon: '⚖️', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>未决诉讼/仲裁</td><td>需通过裁判文书网等渠道检索，可能存在未公开案件</td><td>' + srcGuess + '</td></tr>' +
+      '<tr><td>行政处罚记录</td><td>需通过国家企业信用信息公示系统等渠道查询</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>经营资质/许可证</td><td>需核查企业资质证书原件及有效期</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>环保/安全合规</td><td>需核查相关验收批复文件</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '十一、重大合同核查', icon: '📋', content:
+      '<table class="report-table"><tr><td>核查项</td><td>状态</td><td>来源</td></tr>' +
+      '<tr><td>销售框架协议</td><td>需提供合同原件或复印件</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>重大采购合同</td><td>需提供合同原件或复印件</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>借款及担保合同</td><td>需提供合同原件或复印件</td><td>' + srcMissing + '</td></tr>' +
+      '<tr><td>场地租赁合同</td><td>需提供合同原件或复印件</td><td>' + srcMissing + '</td></tr>' +
+      '</table>' },
+
+    { title: '十二、主要风险汇总', icon: '⚠️', content:
+      '<table class="report-table"><tr><th>风险类别</th><th>风险描述</th><th>来源</th><th>等级</th><th>建议措施</th></tr>' +
+      '<tr><td>股权风险</td><td>实际控制人及股权架构暂无法确认</td><td>' + srcMissing + '</td><td>需关注</td><td>完成工商查档及股权穿透</td></tr>' +
+      '<tr><td>财务风险</td><td>财务数据缺失，无法进行量化评估</td><td>' + srcMissing + '</td><td>需关注</td><td>获取近三年审计报告</td></tr>' +
+      '<tr><td>经营风险</td><td>业务模式、客户、供应商信息缺失</td><td>' + srcMissing + '</td><td>需关注</td><td>开展企业访谈及实地调研</td></tr>' +
+      '<tr><td>法律合规风险</td><td>诉讼及资质情况需进一步核查</td><td>' + srcGuess + '</td><td>需关注</td><td>全面检索裁判文书及行政处罚</td></tr>' +
+      '<tr><td>税务风险</td><td>纳税情况及税收优惠资格待确认</td><td>' + srcMissing + '</td><td>需关注</td><td>核查完税凭证及税务申报记录</td></tr>' +
+      '</table>' },
+
+    { title: '十三、尽调结论及交易建议', icon: '✅', content:
+      '<p><strong>综合评价（基于现有有限资料）</strong>：本次尽调因以下关键信息缺失，无法形成完整的综合评价结论：</p>' +
+      '<ol style="padding-left:18px;line-height:1.8;font-size:13px"><li>实际控制人及完整股权架构未确认</li><li>近三年经审计的财务报告未完整获取</li><li>关联交易、资金占用、对外担保情况未核查</li><li>未决诉讼、行政处罚、经营资质未全面核实</li></ol>' +
+      '<p style="margin-top:12px"><strong>交易前置条件</strong>：在推进交易前，建议完成以下工作：(1)获取并核实企业工商内档全套资料；(2)获取近三年经审计的财务报告；(3)完成股东及实际控制人访谈；(4)调取企业及实控人征信报告；(5)全面检索裁判文书及行政处罚记录 ' + srcMissing + '</p>' +
+      '<p><strong>风控条款建议</strong>：建议在交易文件中设置：(1)实控人及管理层陈述与保证条款；(2)业绩对赌及补偿机制；(3)股权回购条款；(4)分期交割及资金监管安排</p>' +
+      '<p><strong>后续持续管控建议</strong>：建议要求标的企业定期报送财务报表、接受季度现场核查、建立重大事项即时告知机制</p>' }
+  ];
+  
+  for (var i = 0; i < sections.length; i++) {
+    var s = sections[i];
+    content += '<div class="report-section"><div class="report-section-title">' + s.icon + ' ' + s.title + '</div><div class="report-section-content">' + s.content + '</div></div>';
+  }
+  
+  // Comprehensive disclaimer
+  content += '<div style="background:rgba(212,168,83,0.06);border:1px solid rgba(212,168,83,0.15);border-radius:8px;padding:16px;margin-top:20px">';
+  content += '<p style="font-size:13px;color:#d4a853;font-weight:700;margin-bottom:10px">⚠️ 重要声明与提醒</p>';
+  content += '<ol style="font-size:11px;color:rgba(255,255,255,0.55);line-height:1.8;padding-left:16px">';
+  content += '<li><strong>AI生成性质</strong>：本报告由人工智能系统基于用户输入的提示信息自动生成，并非人工撰写的专业尽调报告。</li>';
+  content += '<li><strong>信息来源局限性</strong>：本报告的信息来源仅包括用户提供的企业名称及尽调目的、用户上传的参考文件（如有），以及AI模型训练数据中的公开信息。未进行实地调研、工商查档、访谈或函证等专业尽调程序。</li>';
+  content += '<li><strong>材料真实性提醒</strong>：用户上传的参考文件的真实性、准确性、完整性、客观性和科学性未经本系统验证。本报告对上传文件中的信息不承担核实责任。建议用户自行核实所有上传材料的来源和准确性。</li>';
+  content += '<li><strong>数据准确性不作保证</strong>：报告中标为"数据缺失""存疑待核实""行业参考"的信息，均无法确认其准确性。各项财务数据、股东信息、法律诉讼等关键信息需通过官方渠道独立核实。</li>';
+  content += '<li><strong>不构成专业意见</strong>：本报告不构成投资建议、法律意见、审计意见或任何形式的专业咨询意见。</li>';
+  content += '<li><strong>建议后续程序</strong>：建议委托专业机构开展工商查档、产权核查、征信调取、裁判文书检索、企业访谈、现场盘点、独立审计、税务审查等完整尽调程序。</li>';
+  content += '</ol></div>';
+  content += '<p style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;text-align:center">© AI投行专家 · 本报告由AI自动生成 · 生成时间：' + date + '</p>';
+  
+  return content;
 }
 
 function previewWriteReport() {
   if (!writeState.reportContent) return;
-  var names = { dd: 'AI尽调报告', audit: 'AI审计报告', proposal: 'AI融资建议书' };
-  var t = names[writeState.docType] || '报告预览';
-  openModal(t, '<div style="line-height:1.8;font-size:13px;color:rgba(255,255,255,0.85)">' + writeState.reportContent + '</div>');
+  openModal('AI尽调报告 - ' + writeState.company, '<div style="line-height:1.8;font-size:13px;color:rgba(255,255,255,0.85)" class="use-report-css">' + writeState.reportContent + '</div>');
 }
 
 function downloadWriteReport() {
   if (!writeState.reportContent) return;
-  var names = { dd: 'AI尽调报告', audit: 'AI审计报告', proposal: 'AI融资建议书' };
-  var t = names[writeState.docType] || '报告';
-  var plain = t + ' - ' + new Date().toISOString().slice(0,10) + '\n\n' + writeState.reportContent.replace(/<br\s*\/?>/g, '\n').replace(/<\/?p>/g, '\n').replace(/<\/?strong>/g, '').replace(/<\/?em>/g, '').replace(/<\/?div[^>]*>/g, '\n').replace(/<[^>]*>/g, '');
+  var t = 'AI尽调报告 - ' + (writeState.company || '');
+  var plain = t + ' - ' + new Date().toISOString().slice(0,10) + '\n\n' + writeState.reportContent.replace(/<br\s*\/?>/g, '\n').replace(/<\/?p>/g, '\n').replace(/<\/?strong>/g, '').replace(/<\/?em>/g, '').replace(/<\/?div[^>]*>/g, '\n').replace(/<\/?table[^>]*>/g, '\n').replace(/<\/?tr[^>]*>/g, '\n').replace(/<\/?t[dh][^>]*>/g, '\t').replace(/<[^>]*>/g, '');
   var blob = new Blob([plain], {type: 'text/plain;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href = url; a.download = t + '.txt';
+  a.href = url; a.download = t.replace(/[\\/:*?"<>|]/g, '') + '.txt';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
   showToast('报告已下载', 'success');
